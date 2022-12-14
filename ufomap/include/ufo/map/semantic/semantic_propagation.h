@@ -76,7 +76,7 @@ class SemanticPropagation
 		std::for_each(first, last, [this, prop_criteria](auto r) { set(r, prop_criteria); });
 	}
 
-	void erase(SemanticRange range) { prop_criteria_.erase(range); }
+	// void erase(SemanticRange range) { prop_criteria_.erase(range); } // TODO: fix intense compiler error caused by this
 
 	template <class InputIt>
 	void erase(InputIt first, InputIt last)

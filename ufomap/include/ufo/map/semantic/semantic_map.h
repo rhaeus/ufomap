@@ -47,8 +47,10 @@
 #include <ufo/map/semantic/semantic.h>
 #include <ufo/map/semantic/semantic_node.h>
 #include <ufo/map/semantic/semantic_predicate.h>
-#include <ufo/map/semantic/semantics.h>
+#include <ufo/map/semantic/semantic_propagation.h>
+// #include <ufo/map/semantic/semantics.h>
 #include <ufo/map/semantic/semantics_reference.h>
+#include <ufo/map/semantic/semantic_mapping.h>
 #include <ufo/map/types.h>
 
 // STL
@@ -248,13 +250,13 @@ class SemanticMapBase : public SemanticMapping
 	void insertSemantics(Node node, std::initializer_list<Semantic> ilist,
 	                     bool propagate = true)
 	{
-		insertSemantics(node, std::cbegin(ilist), std::cend(ilist), bool propagate = true);
+		insertSemantics(node, std::cbegin(ilist), std::cend(ilist), propagate);
 	}
 
 	void insertSemantics(Code code, std::initializer_list<Semantic> ilist,
 	                     bool propagate = true)
 	{
-		insertSemantics(code, std::cbegin(ilist), std::cend(ilist), bool propagate = true);
+		insertSemantics(code, std::cbegin(ilist), std::cend(ilist), propagate);
 	}
 
 	void insertSemantics(Key key, std::initializer_list<Semantic> ilist,
@@ -346,7 +348,7 @@ class SemanticMapBase : public SemanticMapping
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z, Semantic semantic,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssignSemantics(derieved().toCode(x, y, z, depth), semantic, propagate);
+		insertOrAssignSemantics(derived().toCode(x, y, z, depth), semantic, propagate);
 	}
 
 	template <class InputIt>
@@ -367,7 +369,7 @@ class SemanticMapBase : public SemanticMapping
 	void insertOrAssignSemantics(Key key, InputIt first, InputIt last,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key, depth), first, last, propagate);
+		insertOrAssign(derived().toCode(key), first, last, propagate);
 	}
 
 	template <class InputIt>
@@ -399,20 +401,20 @@ class SemanticMapBase : public SemanticMapping
 	void insertOrAssignSemantics(Key key, std::initializer_list<Semantic> ilist,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key, depth), first, last, propagate);
+		insertOrAssign(derived().toCode(key), std::begin(ilist), std::end(ilist), propagate);
 	}
 
 	void insertOrAssignSemantics(Point coord, std::initializer_list<Semantic> ilist,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(coord, depth), first, last, propagate);
+		insertOrAssign(derived().toCode(coord, depth), std::begin(ilist), std::end(ilist), propagate);
 	}
 
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z,
 	                             std::initializer_list<Semantic> ilist,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(x, y, z, depth), first, last, propagate);
+		insertOrAssign(derived().toCode(x, y, z, depth), std::begin(ilist), std::end(ilist), propagate);
 	}
 
 	template <class UnaryFunction>
@@ -468,7 +470,7 @@ class SemanticMapBase : public SemanticMapping
 	void insertOrAssignSemantics(Key key, InputIt first, InputIt last, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key, depth), first, last, f, propagate);
+		insertOrAssign(derived().toCode(key), first, last, f, propagate);
 	}
 
 	template <class InputIt, class UnaryFunction>
@@ -504,7 +506,7 @@ class SemanticMapBase : public SemanticMapping
 	void insertOrAssignSemantics(Key key, std::initializer_list<label_t> ilist,
 	                             UnaryFunction f, bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key, depth), std::begin(ilist), std::end(ilist), f,
+		insertOrAssign(derived().toCode(key), std::begin(ilist), std::end(ilist), f,
 		               propagate);
 	}
 
@@ -750,13 +752,13 @@ class SemanticMapBase : public SemanticMapping
 	void eraseSemantics(Point coord, label_t label, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(coord, depth), label, propagate);
+		eraseSemantics(derived().toCode(coord, depth), label, propagate);
 	}
 
 	void eraseSemantics(coord_t x, coord_t y, coord_t z, label_t label,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(x, y, z, depth), label, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), label, propagate);
 	}
 
 	template <class InputIt>
@@ -787,14 +789,14 @@ class SemanticMapBase : public SemanticMapping
 	void eraseSemantics(Point coord, InputIt first, InputIt last, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(coord, depth), first, last, propagate);
+		eraseSemantics(derived().toCode(coord, depth), first, last, propagate);
 	}
 
 	template <class InputIt>
 	void eraseSemantics(coord_t x, coord_t y, coord_t z, InputIt first, InputIt last,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(x, y, z, depth), first, last, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), first, last, propagate);
 	}
 
 	void eraseSemantics(std::initializer_list<label_t> ilist, bool propagate = true)
@@ -823,14 +825,14 @@ class SemanticMapBase : public SemanticMapping
 	void eraseSemantics(Point coord, std::initializer_list<label_t> ilist,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(coord, depth), ilist, propagate);
+		eraseSemantics(derived().toCode(coord, depth), ilist, propagate);
 	}
 
 	void eraseSemantics(coord_t x, coord_t y, coord_t z,
 	                    std::initializer_list<label_t> ilist, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(x, y, z, depth), ilist, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), ilist, propagate);
 	}
 
 	void eraseSemantics(SemanticRange range, bool propagate = true)
@@ -856,13 +858,13 @@ class SemanticMapBase : public SemanticMapping
 	void eraseSemantics(Point coord, SemanticRange range, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(coord, depth), range, propagate);
+		eraseSemantics(derived().toCode(coord, depth), range, propagate);
 	}
 
 	void eraseSemantics(coord_t x, coord_t y, coord_t z, SemanticRange range,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(x, y, z, depth), range, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), range, propagate);
 	}
 
 	void eraseSemantics(SemanticRangeSet const& ranges, bool propagate = true)
@@ -888,13 +890,13 @@ class SemanticMapBase : public SemanticMapping
 	void eraseSemantics(Point coord, SemanticRangeSet const& ranges, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(coord, depth), ranges, propagate);
+		eraseSemantics(derived().toCode(coord, depth), ranges, propagate);
 	}
 
 	void eraseSemantics(coord_t x, coord_t y, coord_t z, SemanticRangeSet const& ranges,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(x, y, z, depth), ranges, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), ranges, propagate);
 	}
 
 	void eraseSemantics(std::string const& name, bool propagate = true)
@@ -920,13 +922,13 @@ class SemanticMapBase : public SemanticMapping
 	void eraseSemantics(Point coord, std::string const& name, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(coord, depth), name, propagate);
+		eraseSemantics(derived().toCode(coord, depth), name, propagate);
 	}
 
 	void eraseSemantics(coord_t x, coord_t y, coord_t z, std::string const& name,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derieved().toCode(x, y, z, depth), name, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), name, propagate);
 	}
 
 	//
@@ -1189,126 +1191,126 @@ class SemanticMapBase : public SemanticMapping
 		changeSemantics(derived().toCode(x, y, z, depth), old_label, new_label, propagate);
 	}
 
-	//
-	// Get label mapping
-	//
+	// //
+	// // Get label mapping
+	// //
 
-	[[nodiscard]] SemanticRange getLabelMapping(std::string const& name) const
-	{
-		// TODO: Look at
-		std::set<std::string> names;
-		std::queue<std::string> queue;
-		queue.push(name);
-		while (!queue.empty()) {
-			std::string cur = queue.front();
-			queue.pop();
-			for (auto const& str : label_mapping_.at(cur).strings) {
-				if (names.insert(str).second) {
-					queue.push(str);
-				}
-			}
-		}
-		container::RangeSet<label_t> labels;
-		for (auto const& str : names) {
-			labels.insert(std::cbegin(label_mapping_.ranges), std::cend(label_mapping_.ranges));
-		}
-		return labels;
-	}
+	// [[nodiscard]] SemanticRange getLabelMapping(std::string const& name) const
+	// {
+	// 	// TODO: Look at
+	// 	std::set<std::string> names;
+	// 	std::queue<std::string> queue;
+	// 	queue.push(name);
+	// 	while (!queue.empty()) {
+	// 		std::string cur = queue.front();
+	// 		queue.pop();
+	// 		for (auto const& str : label_mapping_.at(cur).strings) {
+	// 			if (names.insert(str).second) {
+	// 				queue.push(str);
+	// 			}
+	// 		}
+	// 	}
+	// 	container::RangeSet<label_t> labels;
+	// 	for (auto const& str : names) {
+	// 		labels.insert(std::cbegin(label_mapping_.ranges), std::cend(label_mapping_.ranges));
+	// 	}
+	// 	return labels;
+	// }
 
-	//
-	// Add label mapping
-	//
+	// //
+	// // Add label mapping
+	// //
 
-	void addLabelMapping(std::string const& name, label_t label)
-	{
-		// TODO: Implement
-	}
+	// void addLabelMapping(std::string const& name, label_t label)
+	// {
+	// 	// TODO: Implement
+	// }
 
-	void addLabelMapping(std::string const& name, SemanticRange label_range)
-	{
-		// TODO: Implement
-	}
+	// void addLabelMapping(std::string const& name, SemanticRange label_range)
+	// {
+	// 	// TODO: Implement
+	// }
 
-	void addLabelMapping(std::string const& name, std::string const& name_2)
-	{
-		// TODO: Implement
-	}
+	// void addLabelMapping(std::string const& name, std::string const& name_2)
+	// {
+	// 	// TODO: Implement
+	// }
 
-	template <class InputIt>
-	void addLabelMapping(std::string const& name, InputIt first, InputIt last)
-	{
-		while (first != last) {
-			addLabelMapping(name, *first);
-			std::advance(first, 1);
-		}
-	}
+	// template <class InputIt>
+	// void addLabelMapping(std::string const& name, InputIt first, InputIt last)
+	// {
+	// 	while (first != last) {
+	// 		addLabelMapping(name, *first);
+	// 		std::advance(first, 1);
+	// 	}
+	// }
 
-	//
-	// Remove label mapping
-	//
-
-	void removeLabelMapping(std::string const& name)
-	{
-		// TODO: Implement
-	}
+	// //
+	// // Remove label mapping
+	// //
 
 	// void removeLabelMapping(std::string const& name)
 	// {
-	// 	auto it = label_mapping_.find(name);
-	// 	if (string_label_mapping_.end() != it) {
-	// 		for (auto const& l : it->second) {
-	// 			label_string_mapping_.erase(l);
-	// 		}
-	// 		string_label_mapping_.erase(it);
-	// 	}
+	// 	// TODO: Implement
 	// }
 
-	// void removeLabelMapping(label_t  label)
+	// // void removeLabelMapping(std::string const& name)
+	// // {
+	// // 	auto it = label_mapping_.find(name);
+	// // 	if (string_label_mapping_.end() != it) {
+	// // 		for (auto const& l : it->second) {
+	// // 			label_string_mapping_.erase(l);
+	// // 		}
+	// // 		string_label_mapping_.erase(it);
+	// // 	}
+	// // }
+
+	// // void removeLabelMapping(label_t  label)
+	// // {
+	// // 	auto it = label_string_mapping_.find(label);
+	// // 	if (label_string_mapping_.end() != it) {
+	// // 		string_label_mapping_[it->second].erase(label);
+	// // 		label_string_mapping_.erase(it);
+	// // 	}
+	// // }
+
+	// //
+	// // Clear label mapping
+	// //
+
+	// void clearLabelMapping() { label_mapping_.clear(); }
+
+	// void clearLabelMapping(std::string const& name)
 	// {
-	// 	auto it = label_string_mapping_.find(label);
-	// 	if (label_string_mapping_.end() != it) {
-	// 		string_label_mapping_[it->second].erase(label);
-	// 		label_string_mapping_.erase(it);
-	// 	}
+	// 	// TODO: Implement
 	// }
-
-	//
-	// Clear label mapping
-	//
-
-	void clearLabelMapping() { label_mapping_.clear(); }
-
-	void clearLabelMapping(std::string const& name)
-	{
-		// TODO: Implement
-	}
 
  protected:
 	//
 	// Constructors
 	//
 
-	SemanticMap() = default;
+	SemanticMapBase() = default;
 
-	SemanticMap(SemanticMap const& other) = default;
+	SemanticMapBase(SemanticMapBase const& other) = default;
 
-	SemanticMap(SemanticMap&& other) = default;
+	SemanticMapBase(SemanticMapBase&& other) = default;
 
-	template <class Derived2>
-	SemanticMap(SemanticMap<Derived2> const& other) :  // TODO: Fill in
-	{
-	}
+	// template <class Derived2>
+	// SemanticMapBase(SemanticMapBase<Derived2> const& other) : Derived2  // TODO: Fill in
+	// {
+	// }
 
 	//
 	// Assignment operator
 	//
 
-	SemanticMap& operator=(SemanticMap const& rhs) = default;
+	SemanticMapBase& operator=(SemanticMapBase const& rhs) = default;
 
-	SemanticMap& operator=(SemanticMap&& rhs) = default;
+	SemanticMapBase& operator=(SemanticMapBase&& rhs) = default;
 
 	template <class Derived2>
-	SemanticMap& operator=(SemanticMap<Derived2> const& rhs)
+	SemanticMapBase& operator=(SemanticMapBase<Derived2> const& rhs)
 	{
 		// TODO: Fill in
 		return *this;
@@ -1318,10 +1320,10 @@ class SemanticMapBase : public SemanticMapping
 	// Swap
 	//
 
-	void swap(SemanticMap& other) noexcept
+	void swap(SemanticMapBase& other) noexcept
 	{
-		std::swap(label_mapping_, other.label_mapping_);
-		std::swap(label_propagation_, other.label_propagation_);
+		std::swap(mapping_, other.mapping_);
+		std::swap(propagation_, other.propagation_);
 	}
 
 	//
@@ -1392,61 +1394,61 @@ class SemanticMapBase : public SemanticMapping
 		return node_type::semanticSize();
 	}
 
-	template <class OutputIt>
-	void readNodes(std::istream& in, OutputIt first, OutputIt last)
-	{
-		mapping_.read(in);
+	// template <class OutputIt>
+	// void readNodes(std::istream& in, OutputIt first, OutputIt last)
+	// {
+	// 	mapping_.read(in);
 
-		std::array<size_type, N> sizes;
-		for (; first != last; ++first) {
-			auto& sem = semanticNode(first->node);
+	// 	std::array<size_type, N> sizes ; // TODO: fix this
+	// 	for (; first != last; ++first) {
+	// 		auto& sem = semanticNode(first->node);
 
-			out.write(reinterpret_cast<char*>(sizes.data()), N * sizeof(size_type));
+	// 		out.write(reinterpret_cast<char*>(sizes.data()), N * sizeof(size_type));
 
-			if (first->indices.all()) {
-				sem.resizeLazy(sizes);
-				auto size = std::accumulate(std::cbegin(sizes), std::cend(sizes), std::size_t(0));
-				if (0 != size) {
-					in.read(reinterpret_cast<char*>(sem.begin()), size * sizeof(Semantic));
-				}
-			} else {
-				auto cur_sizes = sem.sizes();
-				for (index_t i = 0; N != i; ++i) {
-					if (!first->indices[i]) {
-						sizes[i] = cur_sizes[i];
-					}
-				}
+	// 		if (first->indices.all()) {
+	// 			sem.resizeLazy(sizes);
+	// 			auto size = std::accumulate(std::cbegin(sizes), std::cend(sizes), std::size_t(0));
+	// 			if (0 != size) {
+	// 				in.read(reinterpret_cast<char*>(sem.begin()), size * sizeof(Semantic));
+	// 			}
+	// 		} else {
+	// 			auto cur_sizes = sem.sizes();
+	// 			for (index_t i = 0; N != i; ++i) {
+	// 				if (!first->indices[i]) {
+	// 					sizes[i] = cur_sizes[i];
+	// 				}
+	// 			}
 
-				sem.resize(sizes);
+	// 			sem.resize(sizes);
 
-				for (index_t i = 0; N != i; ++i) {
-					if (first->indices[i]) {
-						in.read(reinterpret_cast<char*>(sem.begin(i)), sizes[i] * sizeof(Semantic));
-					} else {
-						// Skip forward
-						in.seekg(sizes[i] * sizeof(Semantic), std::istream::cur);
-					}
-				}
-			}
-		}
-	}
+	// 			for (index_t i = 0; N != i; ++i) {
+	// 				if (first->indices[i]) {
+	// 					in.read(reinterpret_cast<char*>(sem.begin(i)), sizes[i] * sizeof(Semantic));
+	// 				} else {
+	// 					// Skip forward
+	// 					in.seekg(sizes[i] * sizeof(Semantic), std::istream::cur);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	template <class InputIt>
-	void writeNodes(std::ostream& out, InputIt first, InputIt last) const
-	{
-		mapping_.write(out);
+	// template <class InputIt>
+	// void writeNodes(std::ostream& out, InputIt first, InputIt last) const
+	// {
+	// 	mapping_.write(out);
 
-		for (; first != last; ++first) {
-			auto const& sem = semanticNode(first->node);
+	// 	for (; first != last; ++first) {
+	// 		auto const& sem = semanticNode(first->node);
 
-			std::array<size_type, N> sizes = sem.sizes();
-			out.write(reinterpret_cast<char const*>(sizes.data()), N * sizeof(size_type));
-			auto size = std::accumulate(std::cbegin(sizes), std::cend(sizes), std::size_t(0));
-			if (0 != size) {
-				out.write(reinterpret_cast<char const*>(sem.begin()), size * sizeof(Semantic));
-			}
-		}
-	}
+	// 		std::array<size_type, N> sizes = sem.sizes();
+	// 		out.write(reinterpret_cast<char const*>(sizes.data()), N * sizeof(size_type));
+	// 		auto size = std::accumulate(std::cbegin(sizes), std::cend(sizes), std::size_t(0));
+	// 		if (0 != size) {
+	// 			out.write(reinterpret_cast<char const*>(sem.begin()), size * sizeof(Semantic));
+	// 		}
+	// 	}
+	// }
 
  protected:
 	// Label mapping
@@ -1459,7 +1461,7 @@ class SemanticMapBase : public SemanticMapping
 
 #endif  // UFO_MAP_SEMANTIC_MAP_H
 
-map.anySemantics(node, "car");
-map.allSemantics(node, "car");
-map.noneSemantics(node, "car");
-map.anySemantics(node, [](Semantic sem) { return 100 < sem.value; });
+// map.anySemantics(node, "car");
+// map.allSemantics(node, "car");
+// map.noneSemantics(node, "car");
+// map.anySemantics(node, [](Semantic sem) { return 100 < sem.value; });

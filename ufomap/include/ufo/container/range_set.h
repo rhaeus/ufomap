@@ -291,6 +291,11 @@ class RangeSet
 		insert(std::cbegin(ilist), std::cend(ilist));
 	}
 
+	void insert(std::initializer_list<Key> ilist)
+	{
+		insert(std::cbegin(ilist), std::cend(ilist));
+	}
+
 	// FIXME: insert_return_type insert(node_type&& nh);
 
 	// FIXME: iterator insert(const_iterator hint, node_type&& nh);

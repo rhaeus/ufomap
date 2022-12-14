@@ -57,11 +57,11 @@ namespace ufo::map::predicate
 //
 
 struct AnyLabel {
-	AnyLabel(std::initializer_list<std::string> ilist) : strings(ilist), need_fetch(true) {}
+	AnyLabel(std::initializer_list<std::string> ilist) : tags(ilist), need_fetch(true) {}
 
-	AnyLabel(std::initializer_list<label_t> ilist) : ranges(ilist), need_fetch(false) {}
+	AnyLabel(std::initializer_list<label_t> ilist) : labels(ilist), need_fetch(false) {}
 
-	AnyLabel(std::initializer_list<SemanticRange> range) : ranges(range), need_fetch(false)
+	AnyLabel(std::initializer_list<SemanticRange> range) : labels(range), need_fetch(false)
 	{
 	}
 
@@ -73,12 +73,12 @@ struct AnyLabel {
 
 	void add(std::string const& tag)
 	{
-		need_fetch = strings.insert(arg).second || need_fetch;
+		need_fetch = tags.insert(tag).second || need_fetch;
 	}
 
-	void add(label_t label) { ranges.insert(label); }
+	void add(label_t label) { labels.insert(label); }
 
-	void add(SemanticRange range) { ranges.insert(range); }
+	void add(SemanticRange range) { labels.insert(range); }
 
 	template <class T, class... Args,
 	          typename std::enable_if<0 < sizeof...(Args), int>::type = 0>
@@ -90,8 +90,8 @@ struct AnyLabel {
 
 	void clear()
 	{
-		strings.clear();
-		ranges.clear();
+		tags.clear();
+		labels.clear();
 		need_fetch = false;
 	}
 

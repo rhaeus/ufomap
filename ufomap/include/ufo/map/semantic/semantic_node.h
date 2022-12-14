@@ -43,11 +43,14 @@
 #define UFO_MAP_SEMANTIC_NODE_H
 
 // UFO
-#include <ufo/map/semantic/semantics.h>
+#include <ufo/map/semantic/semantic_set.h>
+#include <ufo/map/semantic/semantic_util.h>
 
 // STL
 #include <algorithm>
 #include <array>
+
+#include <optional>
 
 namespace ufo::map
 {
@@ -79,6 +82,11 @@ struct SemanticNode {
 	//
 
 	[[nodiscard]] static constexpr std::size_t semanticSize() { return N; }
+
+	[[nodiscard]] size_type semanticAllocSize() const {
+		return empty() ? 0 : semanticSize() + N_H;
+	}
+
 
 	//
 	// Fill
@@ -125,13 +133,13 @@ struct SemanticNode {
 
 	iterator end() noexcept
 	{
-		auto const s = allocSize();
+		auto const s = semanticAllocSize();
 		return 0 == s ? nullptr : semantics.get() + s;
 	}
 
 	const_iterator end() const noexcept
 	{
-		auto const s = allocSize();
+		auto const s = semanticAllocSize();
 		return 0 == s ? nullptr : semantics.get() + s;
 	}
 
@@ -238,6 +246,7 @@ struct SemanticNode {
 
 	[[nodiscard]] size_type size(index_t const index) const
 	{
+		// TODO: ignore 2 msb that are used for change detection
 		return empty()
 		           ? 0
 		           : (index % 2
@@ -264,7 +273,7 @@ struct SemanticNode {
 	[[nodiscard]] std::size_t offset(index_t const index) const
 	{
 		auto const s = sizes();
-		return std::accumulate(std::begin(s), std::begin(s) + index + 1, std::size_t(0));
+		return std::accumulate(std::begin(s), std::begin(s) + index, std::size_t(0));
 	}
 
 	//
@@ -390,20 +399,180 @@ struct SemanticNode {
 	//
 
 	//
-	// TODO: Clear
-	//
-
-	void clear() { semantics.reset(); }
-
-	void clear(index_t index) { resize(index, 0); }
-
-	//
 	// TODO: Erase
 	//
 
 	//
 	// TODO: Erase if
 	//
+
+	//
+	// At
+	//
+
+	std::optional<Semantic> at(index_t index, label_t label) const {
+		return semantic::at<N>(semantics, index, label);
+	}
+
+	//
+	// Value
+	//
+
+	std::optional<value_t> value(index_t index, label_t label) const
+	{
+		return semantic::value<N>(semantics, index, label);
+	}
+
+	//
+	// Count
+	//
+
+	size_type count(index_t index, label_t label) const
+	{
+		return semantic::count<N>(semantics, index, label);
+	}
+
+	//
+	// Find
+	//
+
+	const_iterator find(index_t index, label_t label) const
+	{
+		return semantic::find<N>(semantics, index, label);
+	}
+
+	//
+	// Contains
+	//
+
+	bool contains(index_t index, label_t label) const
+	{
+		return semantic::contains<N>(semantics, index, label);
+	}
+
+	//
+	// Equal range
+	//
+
+	std::pair<const_iterator, const_iterator> equal_range(index_t index, label_t label) const
+	{
+		return semantic::equal_range<N>(semantics, index, label);
+	}
+
+	//
+	// Lower bound
+	//
+
+	[[nodiscard]] const_iterator lower_bound(index_t index, label_t label) const
+	{
+		return semantic::lower_bound<N>(semantics, index, label);
+	}
+
+	//
+	// Upper bound
+	//
+
+	[[nodiscard]] const_iterator upper_bound(index_t index, label_t label) const
+	{
+		return semantic::upper_bound<N>(semantics, index, label);
+	}
+
+	//
+	// All
+	//
+
+	[[nodiscard]] bool all(index_t index, SemanticRange range) const
+	{
+		return semantic::all<N>(semantics, index, range);
+	}
+
+	[[nodiscard]] bool all(index_t index, SemanticRangeSet const& ranges) const
+	{
+		return semantic::all<N>(semantics, index, ranges);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool all(index_t index, UnaryPredicate p) const
+	{
+		return semantic::all<UnaryPredicate, N>(semantics, index, p);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool all(index_t index, SemanticRange range, UnaryPredicate p) const
+	{
+		return semantic::all<UnaryPredicate, N>(semantics, index, range, p);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool all(index_t index, SemanticRangeSet const& ranges, UnaryPredicate p) const
+	{
+		return semantic::all<UnaryPredicate, N>(semantics, index, ranges, p);
+	}
+
+		//
+	// Any
+	//
+
+	[[nodiscard]] bool any(index_t index, SemanticRange range) const
+	{
+		return semantic::any<N>(semantics, index, range);
+	}
+
+	[[nodiscard]] bool any(index_t index, SemanticRangeSet const& ranges) const
+	{
+		return semantic::any<N>(semantics, index, ranges);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool any(index_t index, UnaryPredicate p) const
+	{
+		return semantic::any<UnaryPredicate, N>(semantics, index, p);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool any(index_t index, SemanticRange range, UnaryPredicate p) const
+	{
+		return semantic::any<UnaryPredicate, N>(semantics, index, range, p);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool any(index_t index, SemanticRangeSet const& ranges, UnaryPredicate p) const
+	{
+		return semantic::any<UnaryPredicate, N>(semantics, index, ranges, p);
+	}
+
+	//
+	// None
+	//
+
+	[[nodiscard]] bool none(index_t index, SemanticRange range) const
+	{
+		return semantic::none<N>(semantics, index, range);
+	}
+
+	[[nodiscard]] bool none(index_t index, SemanticRangeSet const &ranges) const 
+	{ 
+		return semantic::none<N>(semantics, index, ranges); 
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool none(index_t index, UnaryPredicate p) const
+	{
+		return semantic::none<UnaryPredicate, N>(semantics, index, p);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool none(index_t index, SemanticRange range, UnaryPredicate p) const
+	{
+		return semantic::none<N>(semantics, index, range, p);
+	}
+
+	template <class UnaryPredicate>
+	[[nodiscard]] bool none(index_t index, SemanticRangeSet const &ranges, UnaryPredicate p) const
+	{
+		return semantic::none<UnaryPredicate, N>(semantics, index, ranges, p);
+	}
+
 
  private:
 	//
@@ -441,15 +610,15 @@ struct SemanticNode {
 		}
 
 		if (std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) != new_size) {
-			pointer p_cur = data_.release();
+			pointer p_cur = semantics.release(); // Releases ownership of its stored pointer, by returning its value and replacing it with a null pointer.
 			pointer p_new = static_cast<pointer>(realloc(p_cur, new_size * sizeof(Semantic)));
 
 			if (!p_new) {
-				data_.reset(p_cur);
+				semantics.reset(p_cur); //Destroys the object currently managed by the unique_ptr (if any) and takes ownership of p.
 				throw std::bad_alloc();
 			}
 
-			data_.reset(p_new);
+			semantics.reset(p_new); //Destroys the object currently managed by the unique_ptr (if any) and takes ownership of p.
 		}
 
 		for (index_t i = 0; N != i; ++i) {
@@ -496,24 +665,24 @@ struct SemanticNode {
 		}
 
 		if (std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) != new_size) {
-			pointer p_cur = data_.release();
+			pointer p_cur = semantics.release();
 			pointer p_new = static_cast<pointer>(realloc(p_cur, new_size * sizeof(Semantic)));
 
 			if (!p_new) {
-				data_.reset(p_cur);
+				semantics.reset(p_cur);
 				throw std::bad_alloc();
 			}
 
-			data_.reset(p_new);
+			semantics.reset(p_new);
 		}
 
-		if (0 == cur_size) {
+		if (0 == std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H)) {
 			for (index_t i = 0; N != i; ++i) {
 				setSize(i, sizes[i]);
 			}
 		} else {
 			// Increase the indices that should be increased
-			auto last = data_.get() + new_size;
+			auto last = semantics.get() + new_size;
 			for (index_t i = N - 1; 0 != i; --i) {
 				setSize(i, sizes[i]);
 

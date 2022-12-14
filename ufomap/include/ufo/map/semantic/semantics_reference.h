@@ -43,7 +43,9 @@
 #define UFO_MAP_SEMANTICS_REFERENCE_H
 
 // UFO
-#include <ufo/map/semantic/semantics.h>
+#include <ufo/map/semantic/semantic_set.h>
+#include <ufo/map/semantic/semantic_node.h>
+#include <ufo/map/semantic/semantic_mapping.h>
 #include <ufo/map/types.h>
 
 // STL
@@ -99,7 +101,7 @@ class SemanticsReference
 	// Data
 	//
 
-	[[nodiscard]] Semantic const* data() const { return semantics_->data(index_); }
+	[[nodiscard]] Semantic const* data() const { return &semantics_->semantics[index_]; }
 
 	//
 	// Iterators
@@ -139,7 +141,7 @@ class SemanticsReference
 
 	[[nodiscard]] size_type size() const { return semantics_->size(index_); }
 
-	[[nodiscard]] size_type maxSize() const { return semantics_->maxSize(index_); }
+	// [[nodiscard]] size_type maxSize() const { return semantics_->maxSize(index_); }
 
 	//
 	// At
