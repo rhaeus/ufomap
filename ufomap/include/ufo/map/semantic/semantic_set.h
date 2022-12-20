@@ -411,15 +411,15 @@ class Semantics
 		return semantic::insert<1>(data_, 0, label, value);
 	}
 
-	// iterator insert(const_iterator hint, Semantic semantic)
-	// {
-	// 	return insert(hint, semantic.label, semantic.value);
-	// }
+	iterator insert(const_iterator hint, Semantic semantic)
+	{
+		return insert(hint, semantic.label, semantic.value);
+	}
 
-	// iterator insert(const_iterator hint, label_t label, value_t value)
-	// {
-	// 	return insert<false>(hint, label, value);
-	// }
+	iterator insert(const_iterator hint, label_t label, value_t value)
+	{
+		return semantic::insertOrAssign<1, false>(data_, 0, hint, label, [value](auto) { return value; });
+	}
 
 	template <class InputIt>
 	void insert(InputIt first, InputIt last)
@@ -446,15 +446,16 @@ class Semantics
 		return semantic::insertOrAssign<1>(data_, 0, label, value);
 	}
 
-	// iterator insertOrAssign(const_iterator hint, Semantic semantic)
-	// {
-	// 	return insertOrAssign(hint, semantic.label, semantic.value);
-	// }
+	iterator insertOrAssign(const_iterator hint, Semantic semantic)
+	{
+		return insertOrAssign(hint, semantic.label, semantic.value);
+	}
 
-	// iterator insertOrAssign(const_iterator hint, label_t label, value_t value)
-	// {
-	// 	return insert<true>(hint, label, value);
-	// }
+	iterator insertOrAssign(const_iterator hint, label_t label, value_t value)
+	{
+		return semantic::insertOrAssign<1, true>(data_, 0, hint, label, [value](auto) { return value; });
+
+	}
 
 	template <class InputIt>
 	void insertOrAssign(InputIt first, InputIt last)

@@ -852,6 +852,46 @@ namespace ufo::map::semantic {
 		}
 	}
 	
+	// allocate and insert/assign with hint
+	template <std::size_t N, bool Assign, class UnaryFunction>
+	iterator insertOrAssign(std::unique_ptr<Semantic[]> & semantics, index_t const index, const_iterator hint, label_t label,
+	                        UnaryFunction f)
+	{
+		if (empty<N>(semantics, index)) {
+			resize<N>(semantics, index, 1);
+			auto it = begin<N>(semantics, index);
+			it->label = label;
+			it->value = f(Semantic(label));
+			return it;
+		}
+
+		auto first_index = begin<N>(semantics, index);
+		auto last_index = end<N>(semantics, index);
+
+		auto first =
+		    first_index != hint && std::prev(hint, 1)->label < label ? hint : first_index;
+		auto last = last_index != hint && hint->label >= label ? hint : last_index;
+		hint = lower_bound<N>(first, last, label);
+
+		auto i = std::distance<const_iterator>(first_index, hint);
+
+		if (last_index != hint && hint->label == label) {
+			// Label already exists
+			auto it = first_index + i;
+			if constexpr (Assign) {
+				it->value = f(*it);
+			}
+			return it;
+		}
+
+		resize<N>(semantics, index, size<N>(semantics, index) + 1);
+		auto it = begin<N>(semantics, index) + i;
+		last_index = end<N>(semantics, index);
+		std::move_backward(it, last_index - 1, last_index);
+		it->label = label;
+		it->value = f(Semantic(label));
+		return it;
+	}
 
 	//
 	// Insert
