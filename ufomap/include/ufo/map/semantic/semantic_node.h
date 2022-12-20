@@ -94,7 +94,7 @@ struct SemanticNode {
 
 	void fill(SemanticNode const &parent, index_t const index)
 	{
-		resizeLazy(parent.size(index));
+		semantic::resizeLazy<N>(semantics, parent.size(index));
 		auto first = parent.begin(index);
 		auto last = parent.end(index);
 		for (index_t i = 0; N != i; ++i) {
@@ -280,9 +280,9 @@ struct SemanticNode {
 	// Clear
 	//
 
-	void clear() noexcept { semantics.reset(); }
+	void clear() noexcept { semantic::clear<N>(semantics);}
 
-	void clear(index_t const index) { resize(index, 0); }
+	void clear(index_t const index) { semantic::clear<N>(semantics, index);}
 
 	//
 	// Set
@@ -290,7 +290,7 @@ struct SemanticNode {
 
 	void set(Semantics const &semantics)
 	{
-		resizeLazy(semantics.size());
+		semantic::resizeLazy<N>(this->semantics, semantics.size());
 		auto first = std::begin(semantics);
 		auto last = std::end(semantics);
 		for (index_t i = 0; N != i; ++i) {
@@ -300,7 +300,7 @@ struct SemanticNode {
 
 	void set(index_t index, Semantics const &semantics)
 	{
-		resize(index, semantics.size());
+		semantic::resize<N>(this->semantics, index, semantics.size());
 		std::copy(std::begin(semantics), std::end(semantics), begin(index));
 	}
 
@@ -319,29 +319,29 @@ struct SemanticNode {
 	}
 
 	//
-	// TODO: Insert
+	// Insert
 	//
 
 	void insert(label_t label, value_t value)
 	{
-		// TODO: Implement
+		semantic::insert<N>(semantics, label, value);
 	}
 
 	void insert(index_t index, label_t label, value_t value)
 	{
-		// TODO: Implement
+		semantic::insert<N>(semantics, index, label, value);
 	}
 
 	template <class InputIt>
 	void insert(InputIt first, InputIt last)
 	{
-		// TODO: Implement
+		semantic::insert<N>(semantics, first, last);
 	}
 
 	template <class InputIt>
 	void insert(index_t index, InputIt first, InputIt last)
 	{
-		// TODO: Implement
+		semantic::insert<N>(semantics, index, first, last);
 	}
 
 	//
@@ -350,49 +350,49 @@ struct SemanticNode {
 
 	void insertOrAssign(label_t label, value_t value)
 	{
-		// TODO: Implement
+		semantic::insertOrAssign<N>(semantics, label, value);
 	}
 
 	void insertOrAssign(index_t index, label_t label, value_t value)
 	{
-		// TODO: Implement
+		semantic::insertOrAssign<N>(semantics, index, label, value);
 	}
 
-	template <class UnaryFunction>
-	void insertOrAssign(label_t label, UnaryFunction f)
-	{
-		// TODO: Implement
-	}
+	// template <class UnaryFunction>
+	// void insertOrAssign(label_t label, UnaryFunction f)
+	// {
+	// 	semantic::insertOrAssign
+	// }
 
-	template <class UnaryFunction>
-	void insertOrAssign(index_t index, label_t label, UnaryFunction f)
-	{
-		// TODO: Implement
-	}
+	// template <class UnaryFunction>
+	// void insertOrAssign(index_t index, label_t label, UnaryFunction f)
+	// {
+	// 	// TODO: Implement
+	// }
 
 	template <class InputIt>
 	void insertOrAssign(InputIt first, InputIt last)
 	{
-		// TODO: Implement
+		semantic::insertOrAssign<N>(semantics, first, last);
 	}
 
 	template <class InputIt>
 	void insertOrAssign(index_t index, InputIt first, InputIt last)
 	{
-		// TODO: Implement
+		semantic::insertOrAssign<N>(semantics, first, last);
 	}
 
-	template <class InputIt, class UnaryFunction>
-	void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
-	{
-		// TODO: Implement
-	}
+	// template <class InputIt, class UnaryFunction>
+	// void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
+	// {
+	// 	// TODO: Implement
+	// }
 
-	template <class InputIt, class UnaryFunction>
-	void insertOrAssign(index_t index, InputIt first, InputIt last, UnaryFunction f)
-	{
-		// TODO: Implement
-	}
+	// template <class InputIt, class UnaryFunction>
+	// void insertOrAssign(index_t index, InputIt first, InputIt last, UnaryFunction f)
+	// {
+	// 	// TODO: Implement
+	// }
 
 	//
 	// TODO: Assign
@@ -494,22 +494,22 @@ struct SemanticNode {
 	template <class UnaryPredicate>
 	[[nodiscard]] bool all(index_t index, UnaryPredicate p) const
 	{
-		return semantic::all<UnaryPredicate, N>(semantics, index, p);
+		return semantic::all<N>(semantics, index, p);
 	}
 
 	template <class UnaryPredicate>
 	[[nodiscard]] bool all(index_t index, SemanticRange range, UnaryPredicate p) const
 	{
-		return semantic::all<UnaryPredicate, N>(semantics, index, range, p);
+		return semantic::all<N>(semantics, index, range, p);
 	}
 
 	template <class UnaryPredicate>
 	[[nodiscard]] bool all(index_t index, SemanticRangeSet const& ranges, UnaryPredicate p) const
 	{
-		return semantic::all<UnaryPredicate, N>(semantics, index, ranges, p);
+		return semantic::all<N>(semantics, index, ranges, p);
 	}
 
-		//
+	//
 	// Any
 	//
 
@@ -526,19 +526,19 @@ struct SemanticNode {
 	template <class UnaryPredicate>
 	[[nodiscard]] bool any(index_t index, UnaryPredicate p) const
 	{
-		return semantic::any<UnaryPredicate, N>(semantics, index, p);
+		return semantic::any<N>(semantics, index, p);
 	}
 
 	template <class UnaryPredicate>
 	[[nodiscard]] bool any(index_t index, SemanticRange range, UnaryPredicate p) const
 	{
-		return semantic::any<UnaryPredicate, N>(semantics, index, range, p);
+		return semantic::any<N>(semantics, index, range, p);
 	}
 
 	template <class UnaryPredicate>
 	[[nodiscard]] bool any(index_t index, SemanticRangeSet const& ranges, UnaryPredicate p) const
 	{
-		return semantic::any<UnaryPredicate, N>(semantics, index, ranges, p);
+		return semantic::any<N>(semantics, index, ranges, p);
 	}
 
 	//
@@ -558,7 +558,7 @@ struct SemanticNode {
 	template <class UnaryPredicate>
 	[[nodiscard]] bool none(index_t index, UnaryPredicate p) const
 	{
-		return semantic::none<UnaryPredicate, N>(semantics, index, p);
+		return semantic::none<N>(semantics, index, p);
 	}
 
 	template <class UnaryPredicate>
@@ -570,147 +570,9 @@ struct SemanticNode {
 	template <class UnaryPredicate>
 	[[nodiscard]] bool none(index_t index, SemanticRangeSet const &ranges, UnaryPredicate p) const
 	{
-		return semantic::none<UnaryPredicate, N>(semantics, index, ranges, p);
+		return semantic::none<N>(semantics, index, ranges, p);
 	}
 
-
- private:
-	//
-	// Resize
-	//
-
-	/*!
-	 * @brief Set the Size
-	 *
-	 * @note Only call if already allocated.
-	 *
-	 * @param index
-	 * @param size
-	 */
-	void setSize(index_t const index, label_t const size)
-	{
-		if (index % 2) {
-			semantics[index / 2].label = size;
-		} else {
-			semantics[index / 2].value = reinterpret_cast<value_t const &>(size);
-		}
-	}
-
-	void resizeLazy(std::array<size_type, N> const &sizes)
-	{
-		auto const new_size = std::accumulate(std::begin(sizes), std::end(sizes), N_H);
-		if (0 == new_size) {
-			clear();
-			return;
-		}
-
-		auto const cur_sizes = sizes();
-		if (cur_sizes == sizes) {
-			return;
-		}
-
-		if (std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) != new_size) {
-			pointer p_cur = semantics.release(); // Releases ownership of its stored pointer, by returning its value and replacing it with a null pointer.
-			pointer p_new = static_cast<pointer>(realloc(p_cur, new_size * sizeof(Semantic)));
-
-			if (!p_new) {
-				semantics.reset(p_cur); //Destroys the object currently managed by the unique_ptr (if any) and takes ownership of p.
-				throw std::bad_alloc();
-			}
-
-			semantics.reset(p_new); //Destroys the object currently managed by the unique_ptr (if any) and takes ownership of p.
-		}
-
-		for (index_t i = 0; N != i; ++i) {
-			setSize(i, sizes[i]);
-		}
-	}
-
-	void resizeLazy(size_type const size)
-	{
-		std::array<size_type, N> sizes;
-		sizes.fill(size);
-		resizeLazy(sizes);
-	}
-
-	void resizeLazy(index_t const index, std::size_t const new_size)
-	{
-		// FIXME: Optimize
-		std::array<size_type, N> s = sizes();
-		s[index] = new_size;
-		resizeLazy(s);
-	}
-
-	void resize(std::array<size_type, N> const &sizes)
-	{
-		auto const new_size = std::accumulate(std::begin(sizes), std::end(sizes), N_H);
-		if (0 == new_size) {
-			clear();
-			return;
-		}
-
-		auto const cur_sizes = sizes();
-		if (cur_sizes == sizes) {
-			return;
-		}
-
-		for (int i = N - 1; 0 <= i; --i) {
-			// Reduce the indices that should be reduced
-			if (cur_sizes[i] <= sizes[i]) {
-				continue;
-			}
-
-			std::move(end(i), end(), begin(i) + sizes[i]);
-			setSize(i, sizes[i]);
-		}
-
-		if (std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) != new_size) {
-			pointer p_cur = semantics.release();
-			pointer p_new = static_cast<pointer>(realloc(p_cur, new_size * sizeof(Semantic)));
-
-			if (!p_new) {
-				semantics.reset(p_cur);
-				throw std::bad_alloc();
-			}
-
-			semantics.reset(p_new);
-		}
-
-		if (0 == std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H)) {
-			for (index_t i = 0; N != i; ++i) {
-				setSize(i, sizes[i]);
-			}
-		} else {
-			// Increase the indices that should be increased
-			auto last = semantics.get() + new_size;
-			for (index_t i = N - 1; 0 != i; --i) {
-				setSize(i, sizes[i]);
-
-				if (0 == sizes[i] || 0 == cur_sizes[i]) {
-					continue;
-				}
-
-				auto first_i = begin(i);
-				auto last_i = end(i);
-				last = last != last_i ? std::move_backward(first_i, last_i, last) : first_i;
-			}
-		}
-	}
-
-	void resize(size_type const size)
-	{
-		std::array<size_type, N> sizes;
-		sizes.fill(size);
-		resize(sizes);
-	}
-
-	void resize(index_t const index, std::size_t const new_size)
-	{
-		// FIXME: Optimize
-		std::array<size_type, N> s = sizes();
-		s[index] = new_size;
-		resize(s);
-	}
 };
 }  // namespace ufo::map
 
