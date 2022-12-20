@@ -315,7 +315,7 @@ class Semantics
 	template <class UnaryPredicate>
 	[[nodiscard]] bool all(UnaryPredicate p) const
 	{
-		return semantic::all<UnaryPredicate, 1>(data_, 0, p);
+		return semantic::all<1>(data_, 0, p);
 	}
 
 	template <class UnaryPredicate>
@@ -327,7 +327,7 @@ class Semantics
 	template <class UnaryPredicate>
 	[[nodiscard]] bool all(SemanticRangeSet const &ranges, UnaryPredicate p) const
 	{
-		return semantic::all<UnaryPredicate, 1>(data_, 0, ranges, p);
+		return semantic::all<1>(data_, 0, ranges, p);
 	}
 
 	//
@@ -347,7 +347,7 @@ class Semantics
 	template <class UnaryPredicate>
 	[[nodiscard]] bool any(UnaryPredicate p) const
 	{
-		return semantic::any<UnaryPredicate, 1>(data_, 0, p);
+		return semantic::any<1>(data_, 0, p);
 	}
 
 	template <class UnaryPredicate>
@@ -359,7 +359,7 @@ class Semantics
 	template <class UnaryPredicate>
 	[[nodiscard]] bool any(SemanticRangeSet const &ranges, UnaryPredicate p) const
 	{
-		return semantic::any<UnaryPredicate, 1>(data_, 0, ranges, p);
+		return semantic::any<1>(data_, 0, ranges, p);
 	}
 
 	//
@@ -376,7 +376,7 @@ class Semantics
 	template <class UnaryPredicate>
 	[[nodiscard]] bool none(UnaryPredicate p) const
 	{
-		return semantic::none<UnaryPredicate, 1>(data_, 0, p);
+		return semantic::none<1>(data_, 0, p);
 	}
 
 	template <class UnaryPredicate>
@@ -388,7 +388,7 @@ class Semantics
 	template <class UnaryPredicate>
 	[[nodiscard]] bool none(SemanticRangeSet const &ranges, UnaryPredicate p) const
 	{
-		return semantic::none<UnaryPredicate, 1>(data_, 0, ranges, p);
+		return semantic::none<1>(data_, 0, ranges, p);
 	}
 
 	//
@@ -397,19 +397,19 @@ class Semantics
 
 	void clear() noexcept { data_.reset(); }
 
-	// //
-	// // Insert
-	// //
+	//
+	// Insert
+	//
 
-	// std::pair<iterator, bool> insert(Semantic semantic)
-	// {
-	// 	return insert(semantic.label, semantic.value);
-	// }
+	std::pair<iterator, bool> insert(Semantic semantic)
+	{
+		return insert(semantic.label, semantic.value);
+	}
 
-	// std::pair<iterator, bool> insert(label_t label, value_t value)
-	// {
-	// 	return insert<false>(label, value);
-	// }
+	std::pair<iterator, bool> insert(label_t label, value_t value)
+	{
+		return semantic::insert<1>(data_, 0, label, value);
+	}
 
 	// iterator insert(const_iterator hint, Semantic semantic)
 	// {
@@ -421,30 +421,30 @@ class Semantics
 	// 	return insert<false>(hint, label, value);
 	// }
 
-	// template <class InputIt>
-	// void insert(InputIt first, InputIt last)
-	// {
-	// 	insert<false>(first, last);
-	// }
+	template <class InputIt>
+	void insert(InputIt first, InputIt last)
+	{
+		semantic::insert<1>(data_, first, last);
+	}
 
-	// void insert(std::initializer_list<Semantic> ilist)
-	// {
-	// 	insert(std::cbegin(ilist), std::cend(ilist));
-	// }
+	void insert(std::initializer_list<Semantic> ilist)
+	{
+		insert(std::cbegin(ilist), std::cend(ilist));
+	}
 
-	// //
-	// // Insert or assign
-	// //
+	//
+	// Insert or assign
+	//
 
-	// std::pair<iterator, bool> insertOrAssign(Semantic semantic)
-	// {
-	// 	return insertOrAssign(semantic.label, semantic.value);
-	// }
+	std::pair<iterator, bool> insertOrAssign(Semantic semantic)
+	{
+		return insertOrAssign(semantic.label, semantic.value);
+	}
 
-	// std::pair<iterator, bool> insertOrAssign(label_t label, value_t value)
-	// {
-	// 	return insert<true>(label, value);
-	// }
+	std::pair<iterator, bool> insertOrAssign(label_t label, value_t value)
+	{
+		return semantic::insertOrAssign<1>(data_, 0, label, value);
+	}
 
 	// iterator insertOrAssign(const_iterator hint, Semantic semantic)
 	// {
@@ -456,38 +456,38 @@ class Semantics
 	// 	return insert<true>(hint, label, value);
 	// }
 
-	// template <class InputIt>
-	// void insertOrAssign(InputIt first, InputIt last)
-	// {
-	// 	insert<true>(first, last);
-	// }
+	template <class InputIt>
+	void insertOrAssign(InputIt first, InputIt last)
+	{
+		semantic::insertOrAssign<1>(data_, first, last);
+	}
 
-	// void insertOrAssign(std::initializer_list<Semantic> ilist)
-	// {
-	// 	insertOrAssign(std::cbegin(ilist), std::cend(ilist));
-	// }
+	void insertOrAssign(std::initializer_list<Semantic> ilist)
+	{
+		insertOrAssign(std::cbegin(ilist), std::cend(ilist));
+	}
 
-	// //
-	// // Insert or assign custom function
-	// //
+	//
+	// Insert or assign custom function
+	//
 
-	// template <class UnaryFunction>
-	// void insertOrAssign(label_t label, UnaryFunction f)
-	// {
-	// 	insert<true>(label, f);
-	// }
+	template <class UnaryFunction>
+	void insertOrAssign(label_t label, UnaryFunction f)
+	{
+		semantic::insertOrAssign<1, true>(data_, label, f);
+	}
 
-	// template <class InputIt, class UnaryFunction>
-	// void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
-	// {
-	// 	insert<true>(first, last, f);
-	// }
+	template <class InputIt, class UnaryFunction>
+	void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
+	{
+		semantic::insertOrAssign<1, true>(data_, first, last, f);
+	}
 
-	// template <class UnaryFunction>
-	// void insertOrAssign(std::initializer_list<label_t> ilist, UnaryFunction f)
-	// {
-	// 	insertOrAssign(std::cbegin(ilist), std::cend(ilist), f);
-	// }
+	template <class UnaryFunction>
+	void insertOrAssign(std::initializer_list<label_t> ilist, UnaryFunction f)
+	{
+		insertOrAssign(std::cbegin(ilist), std::cend(ilist), f);
+	}
 
 	// //
 	// // Assign

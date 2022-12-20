@@ -358,17 +358,17 @@ struct SemanticNode {
 		semantic::insertOrAssign<N>(semantics, index, label, value);
 	}
 
-	// template <class UnaryFunction>
-	// void insertOrAssign(label_t label, UnaryFunction f)
-	// {
-	// 	semantic::insertOrAssign
-	// }
+	template <class UnaryFunction>
+	void insertOrAssign(label_t label, UnaryFunction f)
+	{
+		semantic::insertOrAssign<N, true>(semantics, label, f);
+	}
 
-	// template <class UnaryFunction>
-	// void insertOrAssign(index_t index, label_t label, UnaryFunction f)
-	// {
-	// 	// TODO: Implement
-	// }
+	template <class UnaryFunction>
+	void insertOrAssign(index_t index, label_t label, UnaryFunction f)
+	{
+		semantic::insertOrAssign<N, true>(semantics, index, label, f);
+	}
 
 	template <class InputIt>
 	void insertOrAssign(InputIt first, InputIt last)
