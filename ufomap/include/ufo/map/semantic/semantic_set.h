@@ -105,7 +105,7 @@ class Semantics
 	template <class InputIt>
 	Semantics(InputIt first, InputIt last)
 	{
-		// TODO: Implement
+		insert(first, last);
 	}
 
 	Semantics(std::initializer_list<Semantic> init)
@@ -490,59 +490,45 @@ class Semantics
 		insertOrAssign(std::cbegin(ilist), std::cend(ilist), f);
 	}
 
-	// //
-	// // Assign
-	// //
+	//
+	// Assign
+	//
 
-	// void assign(SemanticRange range, value_t value)
-	// {
-	// 	assign(SemanticRangeSet(range), value);
-	// }
+	void assign(SemanticRange range, value_t value)
+	{
+		assign(SemanticRangeSet{range}, value);
+	}
 
-	// void assign(SemanticRangeSet const &ranges, value_t value)
-	// {
-	// 	assign(ranges, [value](auto) { return value; });
-	// }
+	void assign(SemanticRangeSet const& ranges, value_t value)
+	{
+		semantic::assign<1>(data_, ranges, value);
+	}
 
-	// template <class UnaryPredicate>
-	// void assign(UnaryPredicate p, value_t value)
-	// {
-	// 	assign(p, [value](auto) { return value; });
-	// }
+	template <class UnaryFunction>
+	void assign(SemanticRange range, UnaryFunction f)
+	{
+		semantic::assign<1>(data_, SemanticRangeSet{range}, f);
+	}
 
-	// template <class UnaryFunction>
-	// void assign(SemanticRange range, UnaryFunction f)
-	// {
-	// 	assign(SemanticRangeSet(range), f);
-	// }
+	template <class UnaryPredicate>
+	void assign(UnaryPredicate p, value_t value)
+	{
+		assign(p, [value](auto) { return value; });
+	}
 
-	// template <class UnaryFunction>
-	// void assign(SemanticRangeSet const &ranges, UnaryFunction f)
-	// {
-	// 	auto first = begin();
-	// 	auto last = end();
-	// 	for (auto range : ranges) {
-	// 		if (first == last) {
-	// 			break;
-	// 		}
 
-	// 		first = lower_bound(first, last, range.lower());
-	// 		auto upper = upper_bound(first, last, range.upper());
-	// 		for (; first != upper; ++first) {
-	// 			first->value = f(*first);
-	// 		}
-	// 	}
-	// }
+	template <class UnaryFunction>
+	void assign(SemanticRangeSet const &ranges, UnaryFunction f)
+	{
+		semantic::assign<1>(data_, 0, ranges, f);
+	}
 
-	// template <class UnaryPredicate, class UnaryFunction>
-	// void assign(UnaryPredicate p, UnaryFunction f)
-	// {
-	// 	for (auto first = begin(), last = end(); first != last; ++first) {
-	// 		if (p(*first)) {
-	// 			first->value = f(*first);
-	// 		}
-	// 	}
-	// }
+
+	template <class UnaryPredicate, class UnaryFunction>
+	void assign(UnaryPredicate p, UnaryFunction f)
+	{
+		semantic::assign<1>(data_, p, f);
+	}
 
 	// //
 	// // Erase

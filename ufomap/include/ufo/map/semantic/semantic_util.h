@@ -976,6 +976,84 @@ namespace ufo::map::semantic {
 		return insertOrAssign<N, true>(semantics, index, first, last);
 	}
 
+	//
+	// Assign
+	//
+
+	// index
+	// apply function f to each label of node with index which occurs in the SemanticRangeSet ranges
+	template <std::size_t N, class UnaryFunction>
+	void assign(std::unique_ptr<Semantic[]> & semantics, index_t const index, SemanticRangeSet const &ranges, UnaryFunction f)
+	{
+		auto first = begin<N>(semantics, index);
+		auto last = end<N>(semantics, index);
+		for (auto range : ranges) {
+			if (first == last) {
+				break;
+			}
+
+			first = lower_bound<N>(first, last, range.lower());
+			auto upper = upper_bound<N>(first, last, range.upper());
+			for (; first != upper; ++first) {
+				first->value = f(*first);
+			}
+		}
+	}
+
+	template<std::size_t N>
+	void assign(std::unique_ptr<Semantic[]> & semantics, index_t const index, SemanticRangeSet const &ranges, value_t value)
+	{
+		assign<N>(semantics, index, ranges, [value](auto) { return value; });
+	}
+
+	template <std::size_t N, class InputIt, class UnaryPredicate, class UnaryFunction>
+	void assign(InputIt first, InputIt last, UnaryPredicate p, UnaryFunction f)
+	{
+		for (auto it = first; it != last; ++it) {
+			if (p(*it)) {
+				it->value = f(*it);
+			}
+		}
+	}
+
+	template <std::size_t N, class UnaryPredicate, class UnaryFunction>
+	void assign(std::unique_ptr<Semantic[]> & semantics, index_t index, UnaryPredicate p, UnaryFunction f)
+	{
+		assign<N>(begin<N>(semantics, index), end<N>(semantics, index), p, f);
+	}
+
+	//all
+	// apply function f to each label of all nodes which occurs in the SemanticRangeSet
+	template <std::size_t N, class UnaryFunction>
+	void assign(std::unique_ptr<Semantic[]> & semantics, SemanticRangeSet const &ranges, UnaryFunction f)
+	{
+		for (index_t i = 0; N != i; ++i) {
+			assign<N>(semantics, i, ranges, f);
+		}
+	}
+
+	template<std::size_t N>
+	void assign(std::unique_ptr<Semantic[]> & semantics, SemanticRangeSet const &ranges, value_t value)
+	{
+		for (index_t i = 0; N != i; ++i) {
+			assign<N>(semantics, i, ranges, value);
+		}
+	}
+
+	template <std::size_t N, class UnaryPredicate, class UnaryFunction>
+	void assign(std::unique_ptr<Semantic[]> & semantics, UnaryPredicate p, UnaryFunction f)
+	{
+		assign<N>(begin<N>(semantics), end<N>(semantics), p, f);
+	}
+
+
+
+
+
+	
+
+	
+
 	
 }
 

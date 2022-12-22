@@ -395,8 +395,54 @@ struct SemanticNode {
 	}
 
 	//
-	// TODO: Assign
+	// Assign
 	//
+
+	// all
+	void assign(SemanticRange range, value_t value)
+	{
+		assign(semantics, SemanticRangeSet{range}, value);
+	}
+
+	void assign(SemanticRangeSet const& ranges, value_t value)
+	{
+		semantic::assign<N>(semantics, ranges, value);
+	}
+
+	template <class UnaryFunction>
+	void assign(SemanticRange range, UnaryFunction f)
+	{
+		semantic::assign<N>(semantics, SemanticRangeSet{range}, f);
+	}
+
+	template <class UnaryPredicate, class UnaryFunction>
+	void assign(UnaryPredicate p, UnaryFunction f)
+	{
+		semantic::assign<N>(semantics, p, f);
+	}
+
+	// index
+	void assign(index_t const index, SemanticRange range, value_t value)
+	{
+		assign(index, SemanticRangeSet{range}, value);
+	}
+
+	void assign(index_t const index, SemanticRangeSet const& ranges, value_t value)
+	{
+		semantic::assign<N>(semantics, index, ranges, value);
+	}
+	
+	template <class UnaryFunction>
+	void assign(index_t const index, SemanticRange range, UnaryFunction f)
+	{
+		semantic::assign<N>(semantics, index, SemanticRangeSet{range}, f);
+	}
+
+	template <class UnaryPredicate, class UnaryFunction>
+	void assign(index_t const index, UnaryPredicate p, UnaryFunction f)
+	{
+		semantic::assign<N>(semantics, index, p, f);
+	}
 
 	//
 	// TODO: Erase
