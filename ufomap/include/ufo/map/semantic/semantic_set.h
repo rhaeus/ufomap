@@ -530,57 +530,40 @@ class Semantics
 		semantic::assign<1>(data_, p, f);
 	}
 
-	// //
-	// // Erase
-	// //
+	//
+	// Erase
+	//
 
-	// iterator erase(const_iterator pos) { return erase(pos, std::next(pos)); }
+	iterator erase(const_iterator pos) 
+	{ 
+		return semantic::erase<1>(data_, pos, std::next(pos));
+	}
 
-	// iterator erase(iterator pos) { return erase(pos, std::next(pos)); }
+	iterator erase(iterator pos) 
+	{ 
+		return semantic::erase<1>(data_, pos, std::next(pos));
+	}
 
-	// iterator erase(const_iterator first, const_iterator last)
-	// {
-	// 	if (first == last || cend() == first) {
-	// 		return end();
-	// 	} else if (cbegin() == first && cend() == last) {
-	// 		clear();
-	// 		return end();
-	// 	} else if (cend() == last) {
-	// 		resize(size() - std::distance(first, last));
-	// 		return end();
-	// 	}
+	iterator erase(const_iterator first, const_iterator last)
+	{
+		return semantic::erase<1>(data_, first, last);
+	}
 
-	// 	// TODO: Implement
-	// 	// resize(...);
-	// }
+	size_type erase(label_t label)
+	{
+		return semantic::erase<1>(data_, label);
+	}
 
-	// size_type erase(label_t label)
-	// {
-	// 	auto p = find(label);
-	// 	return p == end() ? 0 : erase(p), 1;
-	// }
+	size_type erase(SemanticRangeSet const &ranges) 
+	{
+		return semantic::erase<1>(data_, ranges);
+	}
 
-	// size_type erase(SemanticRange range) { return erase(SemanticRangeSet{range}); }
+	size_type erase(SemanticRange range) 
+	{ 
+		return erase(SemanticRangeSet{range}); 
+	}
 
-	// size_type erase(SemanticRangeSet const &ranges)
-	// {
-	// 	if (ranges.empty() || empty()) {
-	// 		return 0;
-	// 	}
-
-	// 	auto first = begin();
-	// 	auto last = end();
-	// 	size_type sum = 0;
-	// 	for (auto range : ranges) {
-	// 		first = lower_bound(first, last, range.lower());
-	// 		auto upper = upper_bound(first, last, range.upper());
-	// 		sum += std::distance(first, upper);
-	// 		erase(first, upper);
-	// 		first = upper;
-	// 	}
-
-	// 	return sum;
-	// }
 
 	// //
 	// // Erase if

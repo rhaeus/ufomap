@@ -445,8 +445,53 @@ struct SemanticNode {
 	}
 
 	//
-	// TODO: Erase
+	// Erase
 	//
+
+	iterator erase(const_iterator pos) 
+	{ 
+		return semantic::erase<N>(semantics, pos, std::next(pos));
+	}
+
+	iterator erase(iterator pos) 
+	{ 
+		return semantic::erase<N>(semantics, pos, std::next(pos));
+	}
+
+	iterator erase(const_iterator first, const_iterator last)
+	{
+		return semantic::erase<N>(semantics, first, last);
+	}
+
+	size_type erase(label_t label)
+	{
+		return semantic::erase<N>(semantics, label);
+	}
+
+	size_type erase(SemanticRangeSet const &ranges) 
+	{
+		return semantic::erase<N>(semantics, ranges);
+	}
+
+	size_type erase(SemanticRange range) 
+	{ 
+		return erase(SemanticRangeSet{range}); 
+	}
+
+	size_type erase(index_t const index, label_t label)
+	{
+		return semantic::erase<N>(semantics, index, label);
+	}
+
+	size_type erase(index_t const index, SemanticRangeSet const &ranges)
+	{
+		return semantic::erase<N>(semantics, index, ranges);
+	}
+
+	size_type erase(index_t const index, SemanticRange range)
+	{
+		return erase(index, SemanticRangeSet{range});
+	}
 
 	//
 	// TODO: Erase if

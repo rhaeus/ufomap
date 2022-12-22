@@ -159,7 +159,7 @@ namespace ufo::map::semantic {
 	// Lower bound
 	//
 
-	template<std::size_t N, class InputIt>
+	template<class InputIt>
 	[[nodiscard]] InputIt lower_bound(InputIt first, InputIt last, label_t label) 
 	{
 		return std::lower_bound(first, last, Semantic(label, std::numeric_limits<value_t>::lowest()));
@@ -169,14 +169,14 @@ namespace ufo::map::semantic {
 	[[nodiscard]] iterator lower_bound(std::unique_ptr<Semantic[]> const& semantics, index_t index, label_t label) 
 	{
 		// return std::lower_bound(begin<N>(semantics, index), end<N>(semantics, index), label);
-		return lower_bound<N, iterator>(begin<N>(semantics, index), end<N>(semantics, index), label);
+		return lower_bound(begin<N>(semantics, index), end<N>(semantics, index), label);
 	}
 
 	//
 	// Upper bound
 	//
 
-	template<std::size_t N, class InputIt>
+	template<class InputIt>
 	[[nodiscard]] InputIt upper_bound(InputIt first, InputIt last, label_t label) 
 	{
 		return std::upper_bound(first, last, Semantic(label, std::numeric_limits<value_t>::max()));
@@ -186,7 +186,7 @@ namespace ufo::map::semantic {
 	[[nodiscard]] iterator upper_bound(std::unique_ptr<Semantic[]> const& semantics, index_t index, label_t label) 
 	{
 		// return std::upper_bound(begin<N>(semantics, index), end<N>(semantics, index), label);
-		return upper_bound<N>(begin<N>(semantics, index), end<N>(semantics, index), label);
+		return upper_bound(begin<N>(semantics, index), end<N>(semantics, index), label);
 	}
 
 	//
@@ -274,8 +274,8 @@ namespace ufo::map::semantic {
 		auto first = cbegin<N>(semantics, index);
 		auto last = cend<N>(semantics, index);
 		for (auto range : ranges) {
-			auto lower = lower_bound<N>(first, last, range.lower());
-			first = upper_bound<N>(lower, last, range.upper());
+			auto lower = lower_bound(first, last, range.lower());
+			first = upper_bound(lower, last, range.upper());
 			auto range_dist = range.upper() - range.lower() + 1;
 			auto sem_dist = std::distance(lower, first);
 			if (first == last || range_dist != sem_dist) {
@@ -318,7 +318,7 @@ namespace ufo::map::semantic {
 		auto first = cbegin<N>(semantics, index);
 		auto last = cend<N>(semantics, index);
 		for (auto range : ranges) {
-			auto lower = lower_bound<N>(first, last, range.lower());
+			auto lower = lower_bound(first, last, range.lower());
 			first = upper_bound<N>(lower, last, range.upper());
 			auto range_dist = range.upper() - range.lower() + 1;
 			auto sem_dist = std::distance(lower, first);
@@ -361,7 +361,7 @@ namespace ufo::map::semantic {
 			auto first = cbegin<N>(semantics, index);
 			auto last = cend<N>(semantics, index);
 			for (auto range : ranges) {
-				first = lower_bound<N>(first, last, range.lower());
+				first = lower_bound(first, last, range.lower());
 				if (first == last) {
 					return false;
 				} else if (first->label <= range.upper()) {
@@ -407,7 +407,7 @@ namespace ufo::map::semantic {
 			auto first = cbegin<N>(semantics, index);
 			auto last = cend<N>(semantics, index);
 			for (auto range : ranges) {
-				first = lower_bound<N>(first, last, range.lower());
+				first = lower_bound(first, last, range.lower());
 				for (; first != last && first->label <= range.upper(); ++first) {
 					if (p(*first)) {
 						return true;
@@ -623,7 +623,7 @@ namespace ufo::map::semantic {
 			} else {
 				label = *first;
 			}
-			first_index = lower_bound<N>(first_index, last_index, label);
+			first_index = lower_bound(first_index, last_index, label);
 			if (first_index != last_index && first_index->label == label) {
 				++num;
 			}
@@ -871,7 +871,7 @@ namespace ufo::map::semantic {
 		auto first =
 		    first_index != hint && std::prev(hint, 1)->label < label ? hint : first_index;
 		auto last = last_index != hint && hint->label >= label ? hint : last_index;
-		hint = lower_bound<N>(first, last, label);
+		hint = lower_bound(first, last, label);
 
 		auto i = std::distance<const_iterator>(first_index, hint);
 
@@ -992,8 +992,8 @@ namespace ufo::map::semantic {
 				break;
 			}
 
-			first = lower_bound<N>(first, last, range.lower());
-			auto upper = upper_bound<N>(first, last, range.upper());
+			first = lower_bound(first, last, range.lower());
+			auto upper = upper_bound(first, last, range.upper());
 			for (; first != upper; ++first) {
 				first->value = f(*first);
 			}
@@ -1046,7 +1046,189 @@ namespace ufo::map::semantic {
 		assign<N>(begin<N>(semantics), end<N>(semantics), p, f);
 	}
 
+	//
+	// Erase Impl
+	//
 
+	// just removes, no resize
+	template<std::size_t N>
+	size_type eraseImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, label_t label)
+	{
+		auto first = begin<N>(semantics, index);
+		auto last = end<N>(semantics, index);
+
+		first = lower_bound(first, last, label);
+
+		if (first == last || first->label != label) {
+			return 0;
+		}
+
+		std::move(first + 1, last, first);
+
+		return 1;
+	}
+
+	// just removes, no resize
+	template<std::size_t N>
+	size_type eraseImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, SemanticRangeSet ranges)
+	{
+		auto first = begin<N>(semantics, index);
+		auto last = end<N>(semantics, index);
+
+		size_type num = 0;
+		for (auto range : ranges) {
+			if (first == last) {
+				break;
+			}
+
+			first = lower_bound(first, last, range.lower());
+			auto upper = upper_bound(first, last, range.upper());
+
+			if (first != upper) {
+				num += std::distance(first, upper);
+				last = std::move(upper, last, first);
+			}
+		}
+
+		return num;
+	}
+
+	//
+	// Index
+	//
+
+	// get index to which it belongs
+	template<std::size_t N>
+	[[nodiscard]] index_t index(std::unique_ptr<Semantic[]> const& semantics, const_iterator it)
+	{
+		auto s = sizes<N>(semantics);
+		auto dist = std::distance(cbegin<N>(semantics), it);
+		index_t i = 0;
+		for (auto offset = s[0]; N != i && offset < dist; ++i) {
+			offset += s[i];
+		}
+		return i;
+	}
+
+	//
+	// Erase
+	//
+
+	// Removes the elements in the range [first; last)
+	// return Iterator following the last removed element, end() if nothing removed
+	template<std::size_t N>
+	iterator erase(std::unique_ptr<Semantic[]> & semantics, const_iterator first, const_iterator last)
+	{
+		auto first_index = index<N>(semantics, first);
+		auto last_index = index<N>(semantics, last);
+
+
+		if (first == last || cend<N>(semantics) == first || cend<N>(semantics, first_index) == first) { 
+			return end<N>(semantics);
+		} else if (cbegin<N>(semantics) == first && cend<N>(semantics) == last) {
+			clear<N>(semantics);
+			return end<N>(semantics);
+		}
+
+		auto s = sizes<N>(semantics);
+
+		size_type r_offset = offset<N>(semantics, first_index);
+
+		if (first_index == last_index) {
+			s[first_index] -= std::distance(first, last);
+			if (0 != s[first_index] && cend<N>(semantics, first_index) != last) {
+				auto beg = begin<N>(semantics) + std::distance(cbegin<N>(semantics), last);
+				auto dst = begin<N>(semantics) + std::distance(cbegin<N>(semantics), first);
+				auto l = std::move(beg, end<N>(semantics, first_index), dst);
+				r_offset = std::distance(begin<N>(semantics), l);
+			} else {
+				r_offset = std::distance(begin<N>(semantics), begin<N>(semantics, first_index));
+			}
+		} else {
+			// Handle first
+			s[first_index] -= std::distance(first, cend<N>(semantics, first_index));
+
+			r_offset += s[first_index];
+
+			// Handle middle
+			for (; ++first_index != last_index;) {
+				s[first_index] = 0;
+			}
+
+			// Handle last
+			auto dist = std::distance(cbegin<N>(semantics, last_index), last);
+			s[last_index] -= dist;
+			if (0 != dist && 0 != s[last_index]) {
+				auto beg = begin<N>(semantics) + std::distance(cbegin<N>(semantics), last);
+				auto l = std::move(beg, end<N>(semantics, last_index), begin<N>(semantics, last_index));
+				r_offset += std::distance(begin<N>(semantics, last_index), l);
+			}
+		}
+
+		resize<N>(semantics, s);
+
+		return begin<N>(semantics) + r_offset;
+	}
+
+	template<std::size_t N>
+	size_type erase(std::unique_ptr<Semantic[]> & semantics, label_t label)
+	{
+		if (empty<N>(semantics)) {
+			return 0;
+		}
+
+		auto s = sizes<N>(semantics);
+		auto sum = 0;
+		for (index_t i = 0; N != i; ++i) {
+			auto t = eraseImpl<N>(semantics, i, label);
+			s[i] -= t;
+			sum += t;
+		}
+
+		resize<N>(semantics, s);
+
+		return sum;
+	}
+
+	template<std::size_t N>
+	size_type erase(std::unique_ptr<Semantic[]> & semantics, SemanticRangeSet const &ranges)
+	{
+		if (ranges.empty() || empty<N>(semantics)) {
+			return 0;
+		}
+
+		auto s = sizes<N>(semantics);
+		auto sum = 0;
+		for (index_t i = 0; N != i; ++i) {
+			auto t = eraseImpl<N>(semantics, i, ranges);
+			s[i] -= t;
+			sum += t;
+		}
+
+		resize<N>(semantics, s);
+
+		return sum;
+	}
+
+	template<std::size_t N>
+	size_type erase(std::unique_ptr<Semantic[]> & semantics, index_t const index, label_t label)
+	{
+		auto s = eraseImpl<N>(semantics, index, label);
+		resize<N>(semantics, index, size<N>(semantics, index) - s);
+		return s;
+	}
+
+	template<std::size_t N>
+	size_type erase(std::unique_ptr<Semantic[]> & semantics, index_t const index, SemanticRangeSet const &ranges)
+	{
+		if (ranges.empty() || empty<N>(semantics, index)) {
+			return 0;
+		}
+
+		auto s = eraseImpl<N>(semantics, index, ranges);
+		resize<N>(semantics, index, size<N>(semantics, index) - s);
+		return s;
+	}
 
 
 
