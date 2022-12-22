@@ -1231,10 +1231,137 @@ namespace ufo::map::semantic {
 	}
 
 
+	//
+	// Erase if Impl
+	//
+
+	// just removes, no resize
+	template <std::size_t N, class UnaryPredicate>
+	size_type eraseIfImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, UnaryPredicate p)
+	{
+		auto first = begin<N>(semantics, index);
+		auto last = end<N>(semantics, index);
+
+		first = std::find_if(first, last, p);
+
+		if (first == last) {
+			return 0;
+		}
+
+		size_type num = 0;
+		for (auto it = first; ++it != last;) {
+			if (p(*it)) {
+				++num;
+			} else {
+				*first++ = std::move(*it);
+			}
+		}
+
+		return num;
+	}
+
+	template <std::size_t N, class UnaryPredicate>
+	size_type eraseIfImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, SemanticRangeSet ranges, UnaryPredicate p)
+	{
+		auto first = begin<N>(semantics, index);
+		auto last = end<N>(semantics, index);
+
+		size_type num = 0;
+		for (auto range : ranges) {
+			if (first == last) {
+				break;
+			}
+
+			first = lower_bound(first, last, range.lower());
+			auto upper = upper_bound(first, last, range.upper());
+
+			first = std::find_if(first, upper, p);
+
+			if (first != upper) {
+				for (auto it = first; ++it != upper;) {
+					if (p(*it)) {
+						++num;
+					} else {
+						*first++ = std::move(*it);
+					}
+				}
+
+				if (first != upper) {
+					last = std::move(upper, last, first);
+				}
+			}
+		}
+
+		return num;
+	}
 
 	
 
-	
+	//
+	// Erase if
+	//
+
+	template <std::size_t N, class UnaryPredicate>
+	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, UnaryPredicate p)
+	{
+		if (empty<N>(semantics)) {
+			return 0;
+		}
+
+		auto s = sizes<N>(semantics);
+		auto sum = 0;
+		for (index_t i = 0; N != i; ++i) {
+			auto t = eraseIfImpl<N>(semantics, i, p);
+			s[i] -= t;
+			sum += t;
+		}
+
+		resize<N>(semantics, s);
+
+		return sum;
+	}
+
+	template <std::size_t N, class UnaryPredicate>
+	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, SemanticRangeSet const &ranges, UnaryPredicate p)
+	{
+		if (ranges.empty() || empty<N>(semantics)) {
+			return 0;
+		}
+
+		auto s = sizes<N>(semantics);
+		auto sum = 0;
+		for (index_t i = 0; N != i; ++i) {
+			auto t = eraseIfImpl<N>(semantics, i, ranges, p);
+			s[i] -= t;
+			sum += t;
+		}
+
+		resize<N>(semantics, s);
+
+		return sum;
+	}
+
+
+	template <std::size_t N, class UnaryPredicate>
+	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, index_t const index, UnaryPredicate p)
+	{
+		auto s = eraseIfImpl<N>(semantics, index, p);
+		resize<N>(semantics, index, size<N>(semantics, index) - s);
+		return s;
+	}
+
+	template <std::size_t N, class UnaryPredicate>
+	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, index_t const index, SemanticRangeSet const &ranges, UnaryPredicate p)
+	{
+		if (ranges.empty() || empty<N>(semantics, index)) {
+			return 0;
+		}
+
+		auto s = eraseIfImpl<N>(semantics, index, ranges, p);
+		resize<N>(semantics, index, size<N>(semantics, index) - s);
+		return s;
+	}
+
 
 	
 }

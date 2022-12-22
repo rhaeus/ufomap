@@ -494,8 +494,44 @@ struct SemanticNode {
 	}
 
 	//
-	// TODO: Erase if
+	// Erase if
 	//
+
+	template<class UnaryPredicate>
+	size_type eraseIf(UnaryPredicate p)
+	{
+		return semantic::eraseIf<N>(semantics, p);
+	}
+
+	template<class UnaryPredicate>
+	size_type eraseIf(SemanticRangeSet const &ranges, UnaryPredicate p)
+	{
+		return semantic::eraseIf<N>(semantics, ranges, p);
+	}
+
+	template<class UnaryPredicate>
+	size_type eraseIf(SemanticRange range, UnaryPredicate p)
+	{
+		return eraseIf(SemanticRangeSet{range}, p);
+	}
+
+	template<class UnaryPredicate>
+	size_type eraseIf(index_t const index, UnaryPredicate p) 
+	{
+		return semantic::eraseIf<N>(semantics, index, p);
+	}
+
+	template<class UnaryPredicate>
+	size_type eraseIf(index_t const index, SemanticRangeSet const &ranges, UnaryPredicate p)
+	{
+		return semantic::eraseIf<N>(semantics, index, ranges, p);
+	}
+
+	template<class UnaryPredicate>
+	size_type eraseIf(index_t const index, SemanticRange range, UnaryPredicate p)
+	{
+		return eraseIf(index, SemanticRangeSet{range}, p);
+	}
 
 	//
 	// At
