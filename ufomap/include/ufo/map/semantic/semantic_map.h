@@ -98,7 +98,7 @@ class SemanticMapBase : public SemanticMapping
 	// Set semantics
 	//
 
-	void setSemantics(Node node, Semantics const& semantics, bool propagate = true)
+	void setSemantics(Node node, SemanticSet const& semantics, bool propagate = true)
 	{
 		derived().apply(
 		    node,
@@ -108,7 +108,7 @@ class SemanticMapBase : public SemanticMapping
 		    [&semantics](auto& node) { semanticNode(node).set(semantics); }, propagate);
 	}
 
-	void setSemantics(Code code, Semantics const& semantics, bool propagate = true)
+	void setSemantics(Code code, SemanticSet const& semantics, bool propagate = true)
 	{
 		derived().apply(
 		    code,
@@ -118,18 +118,18 @@ class SemanticMapBase : public SemanticMapping
 		    [&semantics](auto& node) { semanticNode(node).set(semantics); }, propagate);
 	}
 
-	void setSemantics(Key key, Semantics const& semantics, bool propagate = true)
+	void setSemantics(Key key, SemanticSet const& semantics, bool propagate = true)
 	{
 		setSemantics(derived().toCode(key), semantics, propagate);
 	}
 
-	void setSemantics(Point coord, Semantics const& semantics, bool propagate = true,
+	void setSemantics(Point coord, SemanticSet const& semantics, bool propagate = true,
 	                  depth_t depth = 0)
 	{
 		setSemantics(derived().toCode(coord, depth), semantics, propagate);
 	}
 
-	void setSemantics(coord_t x, coord_t y, coord_t z, Semantics const& semantics,
+	void setSemantics(coord_t x, coord_t y, coord_t z, SemanticSet const& semantics,
 	                  bool propagate = true, depth_t depth = 0)
 	{
 		setSemantics(derived().toCode(x, y, z, depth), semantics, propagate);

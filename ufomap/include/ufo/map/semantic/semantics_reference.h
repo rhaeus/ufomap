@@ -92,7 +92,7 @@ class SemanticsReference
 	// Conversion
 	//
 
-	operator Semantics() const
+	operator SemanticSet() const
 	{
 		// TODO: Implement
 	}

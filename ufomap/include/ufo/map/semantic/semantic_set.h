@@ -71,7 +71,7 @@ namespace ufo::map
 template <std::size_t N>
 class SemanticNode;
 
-class Semantics
+class SemanticSet
 {
  public:
 	//  Tags
@@ -90,26 +90,26 @@ class Semantics
 	// Constructors
 	//
 
-	constexpr Semantics() = default;
+	constexpr SemanticSet() = default;
 
-	Semantics(Semantics const &other) { *this = other; }
+	SemanticSet(SemanticSet const &other) { *this = other; }
 
-	Semantics(Semantics &&other) noexcept = default;
+	SemanticSet(SemanticSet &&other) noexcept = default;
 
-	// Semantics(SemanticsReference other)
+	// SemanticSet(SemanticsReference other)
 	// {
 	// 	resize(other.size());
 	// 	std::copy(std::begin(other), std::end(other), begin());
 	// }
 
 	template <class InputIt>
-	Semantics(InputIt first, InputIt last)
+	SemanticSet(InputIt first, InputIt last)
 	{
 		insert(first, last);
 	}
 
-	Semantics(std::initializer_list<Semantic> init)
-	    : Semantics(std::begin(init), std::end(init))
+	SemanticSet(std::initializer_list<Semantic> init)
+	    : SemanticSet(std::begin(init), std::end(init))
 	{
 	}
 
@@ -117,7 +117,7 @@ class Semantics
 	// Assignment operator
 	//
 
-	Semantics &operator=(Semantics const &rhs)
+	SemanticSet &operator=(SemanticSet const &rhs)
 	{
 		if (rhs.empty()) {
 			clear();
@@ -128,9 +128,9 @@ class Semantics
 		return *this;
 	}
 
-	Semantics &operator=(Semantics &&rhs) noexcept = default;
+	SemanticSet &operator=(SemanticSet &&rhs) noexcept = default;
 
-	// Semantics &operator=(SemanticsReference rhs)
+	// SemanticSet &operator=(SemanticsReference rhs)
 	// {
 	// 	resize(rhs.size());
 	// 	std::copy(std::begin(rhs), std::end(rhs), begin());
@@ -591,7 +591,7 @@ class Semantics
 	// Swap
 	//
 
-	void swap(Semantics &other) noexcept { std::swap(data_, other.data_); }
+	void swap(SemanticSet &other) noexcept { std::swap(data_, other.data_); }
 
  protected:
 	//
@@ -633,8 +633,8 @@ class Semantics
 
 namespace std
 {
-void swap(ufo::map::Semantics &lhs,
-          ufo::map::Semantics &rhs) noexcept(noexcept(lhs.swap(rhs)))
+void swap(ufo::map::SemanticSet &lhs,
+          ufo::map::SemanticSet &rhs) noexcept(noexcept(lhs.swap(rhs)))
 {
 	lhs.swap(rhs);
 }

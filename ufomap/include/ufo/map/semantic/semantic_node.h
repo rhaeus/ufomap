@@ -288,7 +288,7 @@ struct SemanticNode {
 	// Set
 	//
 
-	void set(Semantics const &semantics)
+	void set(SemanticSet const &semantics)
 	{
 		semantic::resizeLazy<N>(this->semantics, semantics.size());
 		auto first = std::begin(semantics);
@@ -298,7 +298,7 @@ struct SemanticNode {
 		}
 	}
 
-	void set(index_t index, Semantics const &semantics)
+	void set(index_t index, SemanticSet const &semantics)
 	{
 		semantic::resize<N>(this->semantics, index, semantics.size());
 		std::copy(std::begin(semantics), std::end(semantics), begin(index));
