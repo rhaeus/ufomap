@@ -1107,7 +1107,7 @@ namespace ufo::map::semantic {
 
 	// index
 	// apply function f to each label of node with index which occurs in the SemanticRangeSet ranges
-	template <std::size_t N, class UnaryFunction>
+	template <std::size_t N, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(std::unique_ptr<Semantic[]> & semantics, index_t const index, SemanticRangeSet const &ranges, UnaryFunction f)
 	{
 		auto first = begin<N>(semantics, index);
@@ -1131,7 +1131,7 @@ namespace ufo::map::semantic {
 		assign<N>(semantics, index, ranges, [value](auto) { return value; });
 	}
 
-	template <std::size_t N, class InputIt, class UnaryPredicate, class UnaryFunction>
+	template <std::size_t N, class InputIt, class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(InputIt first, InputIt last, UnaryPredicate p, UnaryFunction f)
 	{
 		for (auto it = first; it != last; ++it) {
@@ -1141,7 +1141,7 @@ namespace ufo::map::semantic {
 		}
 	}
 
-	template <std::size_t N, class UnaryPredicate, class UnaryFunction>
+	template <std::size_t N, class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(std::unique_ptr<Semantic[]> & semantics, index_t index, UnaryPredicate p, UnaryFunction f)
 	{
 		assign<N>(begin<N>(semantics, index), end<N>(semantics, index), p, f);
@@ -1149,7 +1149,7 @@ namespace ufo::map::semantic {
 
 	//all
 	// apply function f to each label of all nodes which occurs in the SemanticRangeSet
-	template <std::size_t N, class UnaryFunction>
+	template <std::size_t N, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(std::unique_ptr<Semantic[]> & semantics, SemanticRangeSet const &ranges, UnaryFunction f)
 	{
 		for (index_t i = 0; N != i; ++i) {
@@ -1165,7 +1165,7 @@ namespace ufo::map::semantic {
 		}
 	}
 
-	template <std::size_t N, class UnaryPredicate, class UnaryFunction>
+	template <std::size_t N, class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(std::unique_ptr<Semantic[]> & semantics, UnaryPredicate p, UnaryFunction f)
 	{
 		assign<N>(begin<N>(semantics), end<N>(semantics), p, f);

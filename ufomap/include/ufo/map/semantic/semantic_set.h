@@ -501,13 +501,13 @@ class SemanticSet
 
 	void assign(SemanticRangeSet const& ranges, value_t value)
 	{
-		semantic::assign<1>(data_, ranges, value);
+		semantic::assign<1>(data_, 0, ranges, value);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(SemanticRange range, UnaryFunction f)
 	{
-		semantic::assign<1>(data_, SemanticRangeSet{range}, f);
+		semantic::assign<1>(data_, 0, SemanticRangeSet{range}, f);
 	}
 
 	template <class UnaryPredicate>
@@ -517,17 +517,17 @@ class SemanticSet
 	}
 
 
-	template <class UnaryFunction>
+	template <class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(SemanticRangeSet const &ranges, UnaryFunction f)
 	{
 		semantic::assign<1>(data_, 0, ranges, f);
 	}
 
 
-	template <class UnaryPredicate, class UnaryFunction>
+	template <class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assign(UnaryPredicate p, UnaryFunction f)
 	{
-		semantic::assign<1>(data_, p, f);
+		semantic::assign<1>(data_, 0, p, f);
 	}
 
 	//
