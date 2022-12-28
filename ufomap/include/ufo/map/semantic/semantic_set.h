@@ -217,7 +217,7 @@ class SemanticSet
 	// Value
 	//
 
-	[[nodiscard]] std::optional<Semantic> value(label_t label) const
+	[[nodiscard]] std::optional<value_t> value(label_t label) const
 	{
 		return semantic::value<1>(data_, 0, label);
 	}
@@ -228,7 +228,7 @@ class SemanticSet
 
 	[[nodiscard]] size_type count(label_t label) const 
 	{ 
-		return semantic::contains<1>(data_, 0, label);
+		return semantic::count<1>(data_, 0, label);
 	}
 
 	//
@@ -411,20 +411,20 @@ class SemanticSet
 		return semantic::insert<1>(data_, 0, label, value);
 	}
 
-	iterator insert(const_iterator hint, Semantic semantic)
+	std::pair<iterator, bool> insert(const_iterator hint, Semantic semantic)
 	{
 		return insert(hint, semantic.label, semantic.value);
 	}
 
-	iterator insert(const_iterator hint, label_t label, value_t value)
+	std::pair<iterator, bool> insert(const_iterator hint, label_t label, value_t value)
 	{
-		return semantic::insertOrAssign<1, false>(data_, 0, hint, label, [value](auto) { return value; });
+		return semantic::insert<1>(data_, 0, hint, label, value);
 	}
 
 	template <class InputIt>
 	void insert(InputIt first, InputIt last)
 	{
-		semantic::insert<1>(data_, first, last);
+		semantic::insert<1>(data_, 0, first, last);
 	}
 
 	void insert(std::initializer_list<Semantic> ilist)
@@ -446,21 +446,20 @@ class SemanticSet
 		return semantic::insertOrAssign<1>(data_, 0, label, value);
 	}
 
-	iterator insertOrAssign(const_iterator hint, Semantic semantic)
+	std::pair<iterator, bool> insertOrAssign(const_iterator hint, Semantic semantic)
 	{
 		return insertOrAssign(hint, semantic.label, semantic.value);
 	}
 
-	iterator insertOrAssign(const_iterator hint, label_t label, value_t value)
+	std::pair<iterator, bool> insertOrAssign(const_iterator hint, label_t label, value_t value)
 	{
-		return semantic::insertOrAssign<1, true>(data_, 0, hint, label, [value](auto) { return value; });
-
+		return semantic::insertOrAssign<1>(data_, 0, hint, label, value);
 	}
 
 	template <class InputIt>
 	void insertOrAssign(InputIt first, InputIt last)
 	{
-		semantic::insertOrAssign<1>(data_, first, last);
+		semantic::insertOrAssign<1>(data_, 0, first, last);
 	}
 
 	void insertOrAssign(std::initializer_list<Semantic> ilist)
@@ -472,19 +471,20 @@ class SemanticSet
 	// Insert or assign custom function
 	//
 
-	template <class UnaryFunction>
+	template <class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(label_t label, UnaryFunction f)
 	{
-		semantic::insertOrAssign<1, true>(data_, label, f);
+		semantic::insertOrAssign<1>(data_, 0, label, f);
 	}
 
-	template <class InputIt, class UnaryFunction>
+	// InputIt to label_t
+	template <class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
 	{
-		semantic::insertOrAssign<1, true>(data_, first, last, f);
+		semantic::insertOrAssign<1>(data_, 0, first, last, f);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(std::initializer_list<label_t> ilist, UnaryFunction f)
 	{
 		insertOrAssign(std::cbegin(ilist), std::cend(ilist), f);
@@ -592,6 +592,10 @@ class SemanticSet
 	//
 
 	void swap(SemanticSet &other) noexcept { std::swap(data_, other.data_); }
+
+	std::string toString() {
+		return semantic::toString<1>(data_);
+	}
 
  protected:
 	//
