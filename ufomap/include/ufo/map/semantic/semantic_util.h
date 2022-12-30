@@ -1240,7 +1240,7 @@ namespace ufo::map::semantic {
 	//
 
 	// Removes the elements in the range [first; last)
-	// return Iterator following the last removed element, end() if nothing removed
+	// return Iterator following the last removed element, end() if nothing removed?
 	template<std::size_t N>
 	iterator erase(std::unique_ptr<Semantic[]> & semantics, const_iterator first, const_iterator last)
 	{
@@ -1262,12 +1262,14 @@ namespace ufo::map::semantic {
 		if (first_index == last_index) {
 			s[first_index] -= std::distance(first, last);
 			if (0 != s[first_index] && cend<N>(semantics, first_index) != last) {
+				r_offset = std::distance(cbegin<N>(semantics), first);
 				auto beg = begin<N>(semantics) + std::distance(cbegin<N>(semantics), last);
 				auto dst = begin<N>(semantics) + std::distance(cbegin<N>(semantics), first);
 				auto l = std::move(beg, end<N>(semantics, first_index), dst);
-				r_offset = std::distance(begin<N>(semantics), l);
+				// r_offset = std::distance(begin<N>(semantics), l);
 			} else {
-				r_offset = std::distance(begin<N>(semantics), begin<N>(semantics, first_index));
+				// r_offset = std::distance(begin<N>(semantics), begin<N>(semantics, first_index));
+				r_offset = std::distance(begin<N>(semantics), begin<N>(semantics, first_index) + s[first_index]);
 			}
 		} else {
 			// Handle first
@@ -1374,7 +1376,7 @@ namespace ufo::map::semantic {
 		}
 
 		size_type num = 0;
-		for (auto it = first; ++it != last;) {
+		for (auto it = first; it != last; ++it) {
 			if (p(*it)) {
 				++num;
 			} else {
@@ -1403,7 +1405,7 @@ namespace ufo::map::semantic {
 			first = std::find_if(first, upper, p);
 
 			if (first != upper) {
-				for (auto it = first; ++it != upper;) {
+				for (auto it = first; it != upper; ++it) {
 					if (p(*it)) {
 						++num;
 					} else {

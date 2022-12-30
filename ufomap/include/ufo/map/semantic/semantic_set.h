@@ -551,12 +551,12 @@ class SemanticSet
 
 	size_type erase(label_t label)
 	{
-		return semantic::erase<1>(data_, label);
+		return semantic::erase<1>(data_, 0, label);
 	}
 
 	size_type erase(SemanticRangeSet const &ranges) 
 	{
-		return semantic::erase<1>(data_, ranges);
+		return semantic::erase<1>(data_, 0,  ranges);
 	}
 
 	size_type erase(SemanticRange range) 
