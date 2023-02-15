@@ -1254,10 +1254,12 @@ namespace ufo::map::semantic {
 	template<std::size_t N>
 	[[nodiscard]] index_t index(std::unique_ptr<Semantic[]> const& semantics, const_iterator it)
 	{
+		assert(it);
+
 		auto s = sizes<N>(semantics);
 		auto dist = std::distance(cbegin<N>(semantics), it);
 		index_t i = 0;
-		for (auto offset = s[0]; N != i && offset < dist; ++i) {
+		for (auto offset = s[0]; N != i && offset <= dist || s[i] == 0; ++i) {
 			offset += s[i];
 		}
 		return i;
