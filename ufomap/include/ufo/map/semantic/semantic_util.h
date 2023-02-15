@@ -601,6 +601,10 @@ namespace ufo::map::semantic {
 					continue;
 				}
 
+				// move if new size is bigger than old size
+
+				
+
 				// auto first_i = begin<N>(semantics, i);
 				// auto last_i = end<N>(semantics, i);
 				// last = last != last_i ? std::move_backward(first_i, last_i, last) : first_i;
@@ -609,10 +613,21 @@ namespace ufo::map::semantic {
 				// auto last_i = end<N>(semantics, i);
 
 				auto start = first_i;
-				if (cur_sizes[i] > 0) {
+
+				// if old size = 0, use start_i after new size
+				// else use end_i of old size
+				if (cur_sizes[i] == 0) {
+					start = first_i;
+				} else {
 					start = last_i_old;
 				}
-				cur_last = std::move_backward(start, cur_last, cur_last + (new_sizes[i]-cur_sizes[i]));
+				// if (cur_sizes[i] > 0) {
+				// 	start = last_i_old;
+				// }
+				// cur_last = std::move_backward(start, cur_last, cur_last + (new_sizes[i]-cur_sizes[i]));
+				auto new_last = cur_last + (new_sizes[i]-cur_sizes[i]);
+				std::move_backward(start, cur_last, new_last);
+				cur_last = new_last;
 			}
 		}
 	}
@@ -853,22 +868,22 @@ namespace ufo::map::semantic {
 				if constexpr (Assign) {
 					it->value = f(*it);
 				}
-				dist[index] = 0;
+				dist[index] = -1; // don't need to insert this label
 			} else {
 				++new_sizes[index];
 				dist[index] = std::distance(begin<N>(semantics, index), it);
 			}
 		}
 
-		if (0 == std::accumulate(std::begin(dist), std::end(dist))) {
-			return;
-		}
+		// if (0 == std::accumulate(std::begin(dist), std::end(dist), 0)) {
+		// 	return;
+		// }
 
 		resize<N>(semantics, new_sizes);
 
 		for (index_t index = 0; N != index; ++index) {
-			if (0 == dist[index]) {
-				continue;
+			if (dist[index] < 0) {
+				continue; // don't need to insert this label, was already assigned
 			}
 			auto it = begin<N>(semantics, index) + dist[index];
 			auto last_index = end<N>(semantics, index);
