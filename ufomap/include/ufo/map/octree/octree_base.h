@@ -261,7 +261,7 @@ class OctreeBase
 	{
 		auto const max = size(rootDepth() - 1);
 		auto const min = -max;
-		return min <= x && min <= y && min <= z && max >= x && max >= y && max >= z;
+		return min <= x && min <= y && min <= z && max > x && max > y && max > z;
 	}
 
 	/**************************************************************************************
@@ -1491,7 +1491,10 @@ class OctreeBase
 	 * @param key The key to convert.
 	 * @return The code corresponding to the key.
 	 */
-	[[nodiscard]] static constexpr Code toCode(Key key) noexcept { return Code(key); }
+	[[nodiscard]] static constexpr Code toCode(Key key) noexcept { 
+		assert(key.depth() <= maxDepthLevels());
+		return Code(key); 
+	}
 
 	/*!
 	 * @brief Convert a coordinate at a specific depth to a code.
@@ -1502,6 +1505,7 @@ class OctreeBase
 	 */
 	[[nodiscard]] constexpr Code toCode(Point coord, depth_t depth = 0) const noexcept
 	{
+		assert(toKeyChecked(coord, depth));
 		return toCode(toKey(coord, depth));
 	}
 
@@ -1515,6 +1519,7 @@ class OctreeBase
 	[[nodiscard]] constexpr Code toCode(coord_t x, coord_t y, coord_t z,
 	                                    depth_t depth = 0) const noexcept
 	{
+		assert(toKeyChecked(x,y,z, depth));
 		return toCode(toKey(x, y, z, depth));
 	}
 
@@ -3075,7 +3080,7 @@ class OctreeBase
 	// Destructor
 	//
 
-	~OctreeBase() { deleteChildren(root(), rootDepth(), true); }
+	~OctreeBase() { deleteChildren(root(), rootDepth()); }
 
 	/**************************************************************************************
 	|                                                                                     |
@@ -3534,7 +3539,7 @@ class OctreeBase
 	{
 		auto min = -size(rootDepth() - 1);
 		auto max = -min;
-		return min <= coord && max >= coord ? std::optional<key_t>(toKey(coord, depth))
+		return min <= coord && max > coord ? std::optional<key_t>(toKey(coord, depth))
 		                                    : std::nullopt;
 	}
 
