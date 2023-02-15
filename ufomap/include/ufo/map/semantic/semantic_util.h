@@ -20,11 +20,6 @@ namespace ufo::map::semantic {
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
     
     
-    // template<std::size_t N>
-    // void insert(up, idx,..)
-
-    // template<std::size_t N>
-    // void insert(up,..)
 
 	//
 	// Clear
@@ -335,7 +330,7 @@ namespace ufo::map::semantic {
 		auto last = cend<N>(semantics, index);
 		for (auto range : ranges) {
 			auto lower = lower_bound(first, last, range.lower());
-			first = upper_bound<N>(lower, last, range.upper());
+			first = upper_bound(lower, last, range.upper());
 			auto range_dist = range.upper() - range.lower() + 1;
 			auto sem_dist = std::distance(lower, first);
 			if (first == last || range_dist != sem_dist) {
@@ -511,15 +506,15 @@ namespace ufo::map::semantic {
 		}
 
 		if (std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) != new_size) {
-			pointer p_cur = semantics.release(); // Releases ownership of its stored pointer, by returning its value and replacing it with a null pointer.
+			pointer p_cur = semantics.release(); 
 			pointer p_new = static_cast<pointer>(realloc(p_cur, new_size * sizeof(Semantic)));
 
 			if (!p_new) {
-				semantics.reset(p_cur); //Destroys the object currently managed by the unique_ptr (if any) and takes ownership of p.
+				semantics.reset(p_cur); 
 				throw std::bad_alloc();
 			}
 
-			semantics.reset(p_new); //Destroys the object currently managed by the unique_ptr (if any) and takes ownership of p.
+			semantics.reset(p_new); 
 		}
 
 		for (index_t i = 0; N != i; ++i) {
@@ -571,7 +566,7 @@ namespace ufo::map::semantic {
 		}
 
 		if (std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) != new_size) {
-			pointer p_cur = semantics.release();
+			pointer p_cur = semantics.release(); 
 			pointer p_new = static_cast<pointer>(realloc(p_cur, new_size * sizeof(Semantic)));
 
 			if (!p_new) {
@@ -582,24 +577,42 @@ namespace ufo::map::semantic {
 			semantics.reset(p_new);
 		}
 
-		if (0 == std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H)) { 
+		if (0 == std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H) 
+			|| std::accumulate(std::begin(cur_sizes), std::end(cur_sizes),0) == 0) { 
 			for (index_t i = 0; N != i; ++i) {
 				setSize<N>(semantics, i, new_sizes[i]);
 			}
 		} else {
 			// Increase the indices that should be increased
-			auto last = semantics.get() + new_size;
-			// for (index_t i = N - 1; 0 != i; --i) {
+			auto const cur_size = std::accumulate(std::begin(cur_sizes), std::end(cur_sizes), N_H);
+			auto cur_last = semantics.get() + cur_size;
+
+
+			// auto last = semantics.get() + new_size;
 			for (int i = N - 1; i >= 0; --i) {
+				// auto first_i_old = begin<N>(semantics, i);
+				auto last_i_old = end<N>(semantics, i);
+
 				setSize<N>(semantics,i, new_sizes[i]);
 
-				if (0 == new_sizes[i] || 0 == cur_sizes[i]) {
+				// if (0 == new_sizes[i] || 0 == cur_sizes[i]) {
+				// if (0 == new_sizes[i]) {
+				if (cur_sizes[i] >= new_sizes[i]) {
 					continue;
 				}
 
+				// auto first_i = begin<N>(semantics, i);
+				// auto last_i = end<N>(semantics, i);
+				// last = last != last_i ? std::move_backward(first_i, last_i, last) : first_i;
+
 				auto first_i = begin<N>(semantics, i);
-				auto last_i = end<N>(semantics, i);
-				last = last != last_i ? std::move_backward(first_i, last_i, last) : first_i;
+				// auto last_i = end<N>(semantics, i);
+
+				auto start = first_i;
+				if (cur_sizes[i] > 0) {
+					start = last_i_old;
+				}
+				cur_last = std::move_backward(start, cur_last, cur_last + (new_sizes[i]-cur_sizes[i]));
 			}
 		}
 	}
@@ -843,7 +856,7 @@ namespace ufo::map::semantic {
 				dist[index] = 0;
 			} else {
 				++new_sizes[index];
-				dist[index] = std::distance(index, it);
+				dist[index] = std::distance(begin<N>(semantics, index), it);
 			}
 		}
 
@@ -1375,8 +1388,8 @@ namespace ufo::map::semantic {
 			return 0;
 		}
 
-		size_type num = 0;
-		for (auto it = first; it != last; ++it) {
+		size_type num = 1;
+		for (auto it = first; ++it != last;) {
 			if (p(*it)) {
 				++num;
 			} else {
@@ -1405,7 +1418,8 @@ namespace ufo::map::semantic {
 			first = std::find_if(first, upper, p);
 
 			if (first != upper) {
-				for (auto it = first; it != upper; ++it) {
+				++num;
+				for (auto it = first; ++it != upper; ) {
 					if (p(*it)) {
 						++num;
 					} else {
