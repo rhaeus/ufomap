@@ -781,6 +781,7 @@ namespace ufo::map::semantic {
 				if ((last_index - 1)->label == *(last - 1)) {
 					(--cur)->label = (--last_index)->label;
 					cur->value = f(*cur);
+					--last;
 					continue;
 				}
 			}
@@ -1039,6 +1040,53 @@ namespace ufo::map::semantic {
 			insertOrAssignImpl<N, Assign>(semantics, index, cur_size, new_size, f, l, fun);
 		}
 	}
+
+	// TODO: enable if InputIt is iterator, otherwise this function is called instead of insertOrAssign(index, label, f)
+	// template <std::size_t N, bool Assign, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	// void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last, UnaryFunction fun)
+	// {
+	// 	std::vector vec(first, last);
+
+	// 	std::sort(std::begin(vec), std::end(vec));
+
+	// 	// Erase duplicate labels
+	// 	auto r_last = std::unique(std::rbegin(vec), std::rend(vec),
+	// 	                          [](auto a, auto b) { return a == b; });
+
+	// 	auto f = r_last.base();
+	// 	auto l = std::end(vec);
+	// 	auto s = std::distance(f, l);
+
+	// 	std::array<size_type, N> new_sizes;
+	// 	new_sizes.fill(s);
+
+	// 	if (empty<N>(semantics)) {
+	// 		// Optimized insert
+	// 		std::vector<Semantic> sem;
+	// 		sem.reserve(s);
+	// 		for (; f != l; ++first) {
+	// 			sem.emplace_back(*f, fun(Semantic(*f)));
+	// 		}
+	// 		resize<N>(semantics, new_sizes);
+	// 		for (index_t index = 0; N != index; ++index) {
+	// 			std::copy(std::cbegin(sem), std::cend(sem), begin<N>(semantics, index));
+	// 		}
+	// 	} else {
+	// 		// Calculate how many elements already exists per index
+	// 		for (index_t index = 0; N != index; ++index) {
+	// 			new_sizes[index] -= numAlreadyExists<N>(semantics, index, f, l);
+	// 		}
+
+	// 		std::array<size_type, N> cur_sizes = sizes<N>(semantics);
+	// 		resize<N>(semantics, new_sizes);
+
+	// 		// Do insert where memory already has been allocated
+	// 		for (index_t index = 0; N != index; ++index) {
+	// 			insertOrAssignImpl<N, Assign>(semantics, index, cur_sizes[index], new_sizes[index], f, l, fun);
+	// 		}
+	// 	}
+	// }
+
 	//
 	// Insert
 	//
@@ -1098,6 +1146,21 @@ namespace ufo::map::semantic {
 		insertOrAssignImpl<N, true>(semantics, first, last);
 	}
 
+	// InputIt to sematic
+	template<std::size_t N, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, label_t label, UnaryFunction f) 
+	{
+		insertOrAssignImpl<N, true>(semantics, label, f);
+	}
+
+	// InputIt to label
+	// TODO: enable if InputIt is iterator
+	// template <std::size_t N, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	// void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last, UnaryFunction f)
+	// {
+	// 	insertOrAssignImpl<N, true>(semantics, first, last, f);
+	// }
+
 	// index
 	template<std::size_t N>
 	std::pair<iterator, bool> insertOrAssign(std::unique_ptr<Semantic[]> & semantics, index_t index, label_t label, value_t value) 
@@ -1123,6 +1186,7 @@ namespace ufo::map::semantic {
 		return insertOrAssignImpl<N, true>(semantics, index, label, f);
 	}
 
+	// TODO: enable if InputIt is iterator
 	template <std::size_t N, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, index_t index, InputIt first, InputIt last, UnaryFunction f)
 	{
@@ -1159,7 +1223,11 @@ namespace ufo::map::semantic {
 		assign<N>(semantics, index, ranges, [value](auto) { return value; });
 	}
 
-	template <std::size_t N, class InputIt, class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	// TODO: enable if InputIt is iterator
+	template <std::size_t N, class InputIt, class UnaryPredicate, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>
+	>
 	void assign(InputIt first, InputIt last, UnaryPredicate p, UnaryFunction f)
 	{
 		for (auto it = first; it != last; ++it) {
@@ -1169,7 +1237,10 @@ namespace ufo::map::semantic {
 		}
 	}
 
-	template <std::size_t N, class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	template <std::size_t N, class UnaryPredicate, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>
+	>
 	void assign(std::unique_ptr<Semantic[]> & semantics, index_t index, UnaryPredicate p, UnaryFunction f)
 	{
 		assign<N>(begin<N>(semantics, index), end<N>(semantics, index), p, f);
@@ -1193,7 +1264,10 @@ namespace ufo::map::semantic {
 		}
 	}
 
-	template <std::size_t N, class UnaryPredicate, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	template <std::size_t N, class UnaryPredicate, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>
+	>
 	void assign(std::unique_ptr<Semantic[]> & semantics, UnaryPredicate p, UnaryFunction f)
 	{
 		assign<N>(begin<N>(semantics), end<N>(semantics), p, f);
@@ -1393,7 +1467,8 @@ namespace ufo::map::semantic {
 	//
 
 	// just removes, no resize
-	template <std::size_t N, class UnaryPredicate>
+	template <std::size_t N, class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIfImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, UnaryPredicate p)
 	{
 		auto first = begin<N>(semantics, index);
@@ -1417,7 +1492,8 @@ namespace ufo::map::semantic {
 		return num;
 	}
 
-	template <std::size_t N, class UnaryPredicate>
+	template <std::size_t N, class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIfImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, SemanticRangeSet ranges, UnaryPredicate p)
 	{
 		auto first = begin<N>(semantics, index);
@@ -1459,7 +1535,8 @@ namespace ufo::map::semantic {
 	// Erase if
 	//
 
-	template <std::size_t N, class UnaryPredicate>
+	template <std::size_t N, class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, UnaryPredicate p)
 	{
 		if (empty<N>(semantics)) {
@@ -1479,7 +1556,8 @@ namespace ufo::map::semantic {
 		return sum;
 	}
 
-	template <std::size_t N, class UnaryPredicate>
+	template <std::size_t N, class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, SemanticRangeSet const &ranges, UnaryPredicate p)
 	{
 		if (ranges.empty() || empty<N>(semantics)) {
@@ -1500,7 +1578,8 @@ namespace ufo::map::semantic {
 	}
 
 
-	template <std::size_t N, class UnaryPredicate>
+	template <std::size_t N, class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, index_t const index, UnaryPredicate p)
 	{
 		auto s = eraseIfImpl<N>(semantics, index, p);
@@ -1508,7 +1587,8 @@ namespace ufo::map::semantic {
 		return s;
 	}
 
-	template <std::size_t N, class UnaryPredicate>
+	template <std::size_t N, class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(std::unique_ptr<Semantic[]> & semantics, index_t const index, SemanticRangeSet const &ranges, UnaryPredicate p)
 	{
 		if (ranges.empty() || empty<N>(semantics, index)) {
