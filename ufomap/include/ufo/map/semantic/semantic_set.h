@@ -572,13 +572,13 @@ class SemanticSet
 	template<class UnaryPredicate>
 	size_type eraseIf(UnaryPredicate p)
 	{
-		return semantic::eraseIf<1>(data_, p);
+		return semantic::eraseIf<1>(data_, 0, p);
 	}
 
 	template<class UnaryPredicate>
 	size_type eraseIf(SemanticRangeSet const &ranges, UnaryPredicate p)
 	{
-		return semantic::eraseIf<1>(data_, ranges, p);
+		return semantic::eraseIf<1>(data_, 0, ranges, p);
 	}
 
 	template<class UnaryPredicate>
@@ -593,7 +593,7 @@ class SemanticSet
 
 	void swap(SemanticSet &other) noexcept { std::swap(data_, other.data_); }
 
-	std::string toString() {
+	std::string toString() const {
 		return semantic::toString<1>(data_);
 	}
 

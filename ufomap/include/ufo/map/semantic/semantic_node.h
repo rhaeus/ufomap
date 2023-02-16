@@ -92,6 +92,7 @@ struct SemanticNode {
 	// Fill
 	//
 
+	// fill all our nodes with data from parent node with specified index
 	void fill(SemanticNode const &parent, index_t const index)
 	{
 		semantic::resizeLazy<N>(semantics, parent.size(index));
@@ -106,11 +107,12 @@ struct SemanticNode {
 	// Is collapsible
 	//
 
-	[[nodiscard]] bool isCollapsible(SemanticNode const &parent, index_t const index) const
+	// check if all nodes have exactly the same contents
+	[[nodiscard]] bool isCollapsible() const 
 	{
-		auto first = parent.begin(index);
-		auto last = parent.end(index);
-		for (index_t i = 0; N != i; ++i) {
+		auto first = cbegin(0);
+		auto last = cend(0);
+		for (index_t i = 1; N != i; ++i) {
 			if (!std::equal(first, last, cbegin(i), cend(i))) {
 				return false;
 			}
@@ -118,29 +120,40 @@ struct SemanticNode {
 		return true;
 	}
 
+	// // check if all children have exactly the same elements as parent at specified index
+	// [[nodiscard]] bool isCollapsible(SemanticNode const &parent, index_t const index) const
+	// {
+	// 	auto first = parent.begin(index);
+	// 	auto last = parent.end(index);
+	// 	for (index_t i = 0; N != i; ++i) {
+	// 		if (!std::equal(first, last, cbegin(i), cend(i))) {
+	// 			return false;
+	// 		}
+	// 	}
+	// 	return true;
+	// }
+
 	//
 	// Iterators
 	//
 
-	iterator begin() noexcept { return empty() ? nullptr : semantics.get() + N_H; }
+	iterator begin() noexcept { return semantic::begin<N>(semantics); }
 
 	const_iterator begin() const noexcept
 	{
-		return empty() ? nullptr : semantics.get() + N_H;
+		return semantic::begin<N>(semantics);
 	}
 
 	const_iterator cbegin() const noexcept { return begin(); }
 
 	iterator end() noexcept
 	{
-		auto const s = semanticAllocSize();
-		return 0 == s ? nullptr : semantics.get() + s;
+		return semantic::end<N>(semantics);
 	}
 
 	const_iterator end() const noexcept
 	{
-		auto const s = semanticAllocSize();
-		return 0 == s ? nullptr : semantics.get() + s;
+		return semantic::end<N>(semantics);
 	}
 
 	const_iterator cend() const noexcept { return end(); }
@@ -173,24 +186,24 @@ struct SemanticNode {
 
 	iterator begin(index_t const index) noexcept
 	{
-		return empty() ? nullptr : semantics.get() + N_H + offset(index);
+		return semantic::begin<N>(semantics, index);
 	}
 
 	const_iterator begin(index_t const index) const noexcept
 	{
-		return empty() ? nullptr : semantics.get() + N_H + offset(index);
+		return semantic::begin<N>(semantics, index);
 	}
 
 	const_iterator cbegin(index_t const index) const noexcept { return begin(index); }
 
 	iterator end(index_t const index) noexcept
 	{
-		return empty() ? nullptr : semantics.get() + N_H + offset(index) + size(index);
+		return semantic::end<N>(semantics, index);
 	}
 
 	const_iterator end(index_t const index) const noexcept
 	{
-		return empty() ? nullptr : semantics.get() + N_H + offset(index) + size(index);
+		return semantic::end<N>(semantics, index);
 	}
 
 	const_iterator cend(index_t const index) const noexcept { return end(index); }
@@ -230,9 +243,9 @@ struct SemanticNode {
 	// Empty
 	//
 
-	[[nodiscard]] bool empty() const noexcept { return nullptr == semantics; }
+	[[nodiscard]] bool empty() const noexcept { return semantic::empty<N>(semantics); }
 
-	[[nodiscard]] bool empty(index_t const index) const { return 0 == size(index); }
+	[[nodiscard]] bool empty(index_t const index) const { semantic::empty<N>(semantics, index);}
 
 	//
 	// Size
@@ -240,30 +253,17 @@ struct SemanticNode {
 
 	[[nodiscard]] std::size_t size() const
 	{
-		auto const s = sizes();
-		return std::accumulate(std::begin(s), std::end(s), std::size_t(0));
+		return semantic::size<N>(semantics);
 	}
 
 	[[nodiscard]] size_type size(index_t const index) const
 	{
-		// TODO: ignore 2 msb that are used for change detection
-		return empty()
-		           ? 0
-		           : (index % 2
-		                  ? semantics[index / 2].label
-		                  : reinterpret_cast<label_t const &>(semantics[index / 2].value));
+		return semantic::size<N>(semantics, index);
 	}
 
 	[[nodiscard]] std::array<size_type, N> sizes() const
 	{
-		if (empty()) {
-			return std::array<size_type, N>{};
-		}
-
-		std::array<size_type, N> s;
-		std::copy(semantics.get(), semantics.get() + N_H,
-		          reinterpret_cast<Semantic *>(s.data()));
-		return s;
+		return semantic::sizes<N>(semantics);
 	}
 
 	//
@@ -272,8 +272,7 @@ struct SemanticNode {
 
 	[[nodiscard]] std::size_t offset(index_t const index) const
 	{
-		auto const s = sizes();
-		return std::accumulate(std::begin(s), std::begin(s) + index, std::size_t(0));
+		return semantic::offset<N>(semantics, index);
 	}
 
 	//
@@ -358,37 +357,44 @@ struct SemanticNode {
 		semantic::insertOrAssign<N>(semantics, index, label, value);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(label_t label, UnaryFunction f)
 	{
-		semantic::insertOrAssign<N, true>(semantics, label, f);
+		semantic::insertOrAssign<N>(semantics, label, f);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(index_t index, label_t label, UnaryFunction f)
 	{
-		semantic::insertOrAssign<N, true>(semantics, index, label, f);
+		semantic::insertOrAssign<N>(semantics, index, label, f);
 	}
 
+	// iterator to semantics
+	// TODO: enable if for InputIt
 	template <class InputIt>
 	void insertOrAssign(InputIt first, InputIt last)
 	{
 		semantic::insertOrAssign<N>(semantics, first, last);
 	}
 
+	// iterator to semantics
+	// TODO: enable if for InputIt
 	template <class InputIt>
 	void insertOrAssign(index_t index, InputIt first, InputIt last)
 	{
-		semantic::insertOrAssign<N>(semantics, first, last);
+		semantic::insertOrAssign<N>(semantics, index, first, last);
 	}
 
-	template <class InputIt, class UnaryFunction>
-	void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
-	{
-		semantic::insertOrAssign<N>(semantics, first, last, f);
-	}
+	// TODO: enable if InputIt is iterator, otherwise this function is called instead of insertOrAssign(index, label, f)
+	// // iterator to label
+	// template <class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	// void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
+	// {
+	// 	semantic::insertOrAssign<N>(semantics, first, last, f);
+	// }
 
-	template <class InputIt, class UnaryFunction>
+	// iterator to label
+	template <class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssign(index_t index, InputIt first, InputIt last, UnaryFunction f)
 	{
 		semantic::insertOrAssign<N>(semantics, index, first, last, f);
@@ -409,13 +415,18 @@ struct SemanticNode {
 		semantic::assign<N>(semantics, ranges, value);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>
+	>
 	void assign(SemanticRange range, UnaryFunction f)
 	{
 		semantic::assign<N>(semantics, SemanticRangeSet{range}, f);
 	}
 
-	template <class UnaryPredicate, class UnaryFunction>
+	template <class UnaryPredicate, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>
+	>
 	void assign(UnaryPredicate p, UnaryFunction f)
 	{
 		semantic::assign<N>(semantics, p, f);
@@ -432,13 +443,18 @@ struct SemanticNode {
 		semantic::assign<N>(semantics, index, ranges, value);
 	}
 	
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>
+	>
 	void assign(index_t const index, SemanticRange range, UnaryFunction f)
 	{
 		semantic::assign<N>(semantics, index, SemanticRangeSet{range}, f);
 	}
 
-	template <class UnaryPredicate, class UnaryFunction>
+	template <class UnaryPredicate, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>
+	>
 	void assign(index_t const index, UnaryPredicate p, UnaryFunction f)
 	{
 		semantic::assign<N>(semantics, index, p, f);
@@ -458,6 +474,7 @@ struct SemanticNode {
 		return semantic::erase<N>(semantics, pos, std::next(pos));
 	}
 
+	// Removes the elements in the range [first, last)
 	iterator erase(const_iterator first, const_iterator last)
 	{
 		return semantic::erase<N>(semantics, first, last);
@@ -497,37 +514,43 @@ struct SemanticNode {
 	// Erase if
 	//
 
-	template<class UnaryPredicate>
+	template<class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(UnaryPredicate p)
 	{
 		return semantic::eraseIf<N>(semantics, p);
 	}
 
-	template<class UnaryPredicate>
+	template<class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(SemanticRangeSet const &ranges, UnaryPredicate p)
 	{
 		return semantic::eraseIf<N>(semantics, ranges, p);
 	}
 
-	template<class UnaryPredicate>
+	template<class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(SemanticRange range, UnaryPredicate p)
 	{
 		return eraseIf(SemanticRangeSet{range}, p);
 	}
 
-	template<class UnaryPredicate>
+	template<class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(index_t const index, UnaryPredicate p) 
 	{
 		return semantic::eraseIf<N>(semantics, index, p);
 	}
 
-	template<class UnaryPredicate>
+	template<class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(index_t const index, SemanticRangeSet const &ranges, UnaryPredicate p)
 	{
 		return semantic::eraseIf<N>(semantics, index, ranges, p);
 	}
 
-	template<class UnaryPredicate>
+	template<class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	size_type eraseIf(index_t const index, SemanticRange range, UnaryPredicate p)
 	{
 		return eraseIf(index, SemanticRangeSet{range}, p);
@@ -698,6 +721,10 @@ struct SemanticNode {
 	[[nodiscard]] bool none(index_t index, SemanticRangeSet const &ranges, UnaryPredicate p) const
 	{
 		return semantic::none<N>(semantics, index, ranges, p);
+	}
+
+	std::string toString() const {
+		return semantic::toString<N>(semantics);
 	}
 
 };
