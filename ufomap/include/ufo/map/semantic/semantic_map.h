@@ -102,20 +102,20 @@ class SemanticMapBase : public SemanticMapping
 	{
 		derived().apply(
 		    node,
-		    [&semantics](auto& node, index_t index) {
+		    [this, &semantics](auto& node, index_t index) {
 			    semanticNode(node).set(index, semantics);
 		    },
-		    [&semantics](auto& node) { semanticNode(node).set(semantics); }, propagate);
+		    [this, &semantics](auto& node) { semanticNode(node).set(semantics); }, propagate);
 	}
 
 	void setSemantics(Code code, SemanticSet const& semantics, bool propagate = true)
 	{
 		derived().apply(
 		    code,
-		    [&semantics](auto& node, index_t index) {
+		    [this, &semantics](auto& node, index_t index) {
 			    semanticNode(node).set(index, semantics);
 		    },
-		    [&semantics](auto& node) { semanticNode(node).set(semantics); }, propagate);
+		    [this, &semantics](auto& node) { semanticNode(node).set(semantics); }, propagate);
 	}
 
 	void setSemantics(Key key, SemanticSet const& semantics, bool propagate = true)
@@ -143,10 +143,10 @@ class SemanticMapBase : public SemanticMapping
 	{
 		derived().apply(
 		    node,
-		    [label, value](auto& node, index_t index) {
+		    [this, label, value](auto& node, index_t index) {
 			    semanticNode(node).insert(index, label, value);
 		    },
-		    [label, value](auto& node) { semanticNode(node).insert(label, value); },
+		    [this, label, value](auto& node) { semanticNode(node).insert(label, value); },
 		    propagate);
 	}
 
@@ -154,10 +154,10 @@ class SemanticMapBase : public SemanticMapping
 	{
 		derived().apply(
 		    code,
-		    [label, value](auto& node, index_t index) {
+		    [this, label, value](auto& node, index_t index) {
 			    semanticNode(node).insert(index, label, value);
 		    },
-		    [label, value](auto& node) { semanticNode(node).insert(label, value); },
+		    [this, label, value](auto& node) { semanticNode(node).insert(label, value); },
 		    propagate);
 	}
 
@@ -205,42 +205,62 @@ class SemanticMapBase : public SemanticMapping
 		insertSemantics(derived().toCode(x, y, z, depth), semantic, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertSemantics(Node node, InputIt first, InputIt last, bool propagate = true)
 	{
 		derived().apply(
 		    node,
-		    [first, last](auto& node, index_t index) {
+		    [this, first, last](auto& node, index_t index) {
 			    semanticNode(node).insert(index, first, last);
 		    },
-		    [first, last](auto& node) { semanticNode(node).insert(first, last); }, propagate);
+		    [this, first, last](auto& node) { semanticNode(node).insert(first, last); }, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertSemantics(Code code, InputIt first, InputIt last, bool propagate = true)
 	{
 		derived().apply(
 		    code,
-		    [first, last](auto& node, index_t index) {
+		    [this, first, last](auto& node, index_t index) {
 			    semanticNode(node).insert(index, first, last);
 		    },
-		    [first, last](auto& node) { semanticNode(node).insert(first, last); }, propagate);
+		    [this, first, last](auto& node) { semanticNode(node).insert(first, last); }, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertSemantics(Key key, InputIt first, InputIt last, bool propagate = true)
 	{
 		insertSemantics(derived().toCode(key), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertSemantics(coord_t x, coord_t y, coord_t z, InputIt first, InputIt last,
 	                     bool propagate = true, depth_t depth = 0)
 	{
 		insertSemantics(derived().toCode(x, y, z, depth), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertSemantics(Point coord, InputIt first, InputIt last, bool propagate = true,
 	                     depth_t depth = 0)
 	{
@@ -287,10 +307,10 @@ class SemanticMapBase : public SemanticMapping
 	{
 		derived().apply(
 		    node,
-		    [label, value](auto& node, index_t index) {
+		    [this, label, value](auto& node, index_t index) {
 			    semanticNode(node).insertOrAssign(index, label, value);
 		    },
-		    [label, value](auto& node) { semanticNode(node).insertOrAssign(label, value); },
+		    [this, label, value](auto& node) { semanticNode(node).insertOrAssign(label, value); },
 		    propagate);
 	}
 
@@ -299,10 +319,10 @@ class SemanticMapBase : public SemanticMapping
 	{
 		derived().apply(
 		    code,
-		    [label, value](auto& node, index_t index) {
+		    [this, label, value](auto& node, index_t index) {
 			    semanticNode(node).insertOrAssign(index, label, value);
 		    },
-		    [label, value](auto& node) { semanticNode(node).insertOrAssign(label, value); },
+		    [this, label, value](auto& node) { semanticNode(node).insertOrAssign(label, value); },
 		    propagate);
 	}
 
@@ -351,39 +371,71 @@ class SemanticMapBase : public SemanticMapping
 		insertOrAssignSemantics(derived().toCode(x, y, z, depth), semantic, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Node node, InputIt first, InputIt last,
 	                             bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, first, last](auto& node, index_t index) {
+			    semanticNode(node).insertOrAssign(index, first, last);
+		    },
+		    [this, first, last](auto& node) { semanticNode(node).insertOrAssign(first, last); },
+		    propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Code code, InputIt first, InputIt last,
 	                             bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, first, last](auto& node, index_t index) {
+			    semanticNode(node).insertOrAssign(index, first, last);
+		    },
+		    [this, first, last](auto& node) { semanticNode(node).insertOrAssign(first, last); },
+		    propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Key key, InputIt first, InputIt last,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key), first, last, propagate);
+		insertOrAssignSemantics(derived().toCode(key), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Point coord, InputIt first, InputIt last,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(coord, depth), first, last, propagate);
+		insertOrAssignSemantics(derived().toCode(coord, depth), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z, InputIt first,
 	                             InputIt last, bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(x, y, z, depth), first, last, propagate);
+		insertOrAssignSemantics(derived().toCode(x, y, z, depth), first, last, propagate);
 	}
 
 	void insertOrAssignSemantics(Node node, std::initializer_list<Semantic> ilist,
@@ -401,129 +453,188 @@ class SemanticMapBase : public SemanticMapping
 	void insertOrAssignSemantics(Key key, std::initializer_list<Semantic> ilist,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key), std::begin(ilist), std::end(ilist), propagate);
+		insertOrAssignSemantics(derived().toCode(key), std::begin(ilist), std::end(ilist), propagate);
 	}
 
 	void insertOrAssignSemantics(Point coord, std::initializer_list<Semantic> ilist,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(coord, depth), std::begin(ilist), std::end(ilist), propagate);
+		insertOrAssignSemantics(derived().toCode(coord, depth), std::begin(ilist), std::end(ilist), propagate);
 	}
 
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z,
 	                             std::initializer_list<Semantic> ilist,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(x, y, z, depth), std::begin(ilist), std::end(ilist), propagate);
+		insertOrAssignSemantics(derived().toCode(x, y, z, depth), std::begin(ilist), std::end(ilist), propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Node node, label_t label, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		   [this, label, f](auto& node, index_t index) {
+			    semanticNode(node).insertOrAssign(index, label, f);
+		    },
+		    [this, label, f](auto& node) { semanticNode(node).insertOrAssign(label, f); },
+		    propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Code code, label_t label, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, label, f](auto& node, index_t index) {
+			    semanticNode(node).insertOrAssign(index, label, f);
+		    },
+		    [this, label, f](auto& node) { semanticNode(node).insertOrAssign(label, f); },
+		    propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Key key, label_t label, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key), label, f, propagate);
+		insertOrAssignSemantics(derived().toCode(key), label, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Point coord, label_t label, UnaryFunction f,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(coord, depth), label, f, propagate);
+		insertOrAssignSemantics(derived().toCode(coord, depth), label, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z, label_t label,
 	                             UnaryFunction f, bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(x, y, z, depth), label, f, propagate);
+		insertOrAssignSemantics(derived().toCode(x, y, z, depth), label, f, propagate);
 	}
 
-	template <class InputIt, class UnaryFunction>
+	template <class InputIt, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Node node, InputIt first, InputIt last, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, first, last, f](auto& node, index_t index) {
+			    semanticNode(node).insertOrAssign(index, first, last, f);
+		    },
+		    [this, first, last, f](auto& node) { semanticNode(node).insertOrAssign(first, last, f); },
+		    propagate);
 	}
 
-	template <class InputIt, class UnaryFunction>
+	template <class InputIt, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Code code, InputIt first, InputIt last, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, first, last, f](auto& node, index_t index) {
+			    semanticNode(node).insertOrAssign(index, first, last, f);
+		    },
+		    [this, first, last, f](auto& node) { semanticNode(node).insertOrAssign(first, last, f); },
+		    propagate);
 	}
 
-	template <class InputIt, class UnaryFunction>
+	template <class InputIt, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Key key, InputIt first, InputIt last, UnaryFunction f,
 	                             bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key), first, last, f, propagate);
+		insertOrAssignSemantics(derived().toCode(key), first, last, f, propagate);
 	}
 
-	template <class InputIt, class UnaryFunction>
+	template <class InputIt, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(Point coord, InputIt first, InputIt last, UnaryFunction f,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(coord, depth), first, last, f, propagate);
+		insertOrAssignSemantics(derived().toCode(coord, depth), first, last, f, propagate);
 	}
 
-	template <class InputIt, class UnaryFunction>
+	template <class InputIt, class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z, InputIt first,
 	                             InputIt last, UnaryFunction f, bool propagate = true,
 	                             depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(x, y, z, depth), first, last, f, propagate);
+		insertOrAssignSemantics(derived().toCode(x, y, z, depth), first, last, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Node node, std::initializer_list<label_t> ilist,
 	                             UnaryFunction f, bool propagate = true)
 	{
 		insertOrAssignSemantics(node, std::begin(ilist), std::end(ilist), f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Code code, std::initializer_list<label_t> ilist,
 	                             UnaryFunction f, bool propagate = true)
 	{
 		insertOrAssignSemantics(code, std::begin(ilist), std::end(ilist), f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Key key, std::initializer_list<label_t> ilist,
 	                             UnaryFunction f, bool propagate = true)
 	{
-		insertOrAssign(derived().toCode(key), std::begin(ilist), std::end(ilist), f,
+		insertOrAssignSemantics(derived().toCode(key), std::begin(ilist), std::end(ilist), f,
 		               propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(Point coord, std::initializer_list<label_t> ilist,
 	                             UnaryFunction f, bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(coord, depth), std::begin(ilist), std::end(ilist), f,
+		insertOrAssignSemantics(derived().toCode(coord, depth), std::begin(ilist), std::end(ilist), f,
 		               propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void insertOrAssignSemantics(coord_t x, coord_t y, coord_t z,
 	                             std::initializer_list<label_t> ilist, UnaryFunction f,
 	                             bool propagate = true, depth_t depth = 0)
 	{
-		insertOrAssign(derived().toCode(x, y, z, depth), std::begin(ilist), std::end(ilist),
+		insertOrAssignSemantics(derived().toCode(x, y, z, depth), std::begin(ilist), std::end(ilist),
 		               f, propagate);
 	}
 
@@ -531,69 +642,107 @@ class SemanticMapBase : public SemanticMapping
 	// Assign
 	//
 
-	void assignSemantics(Node node, std::string const& name, value_t value,
+	void assignSemantics(Node node, std::string const& tag, value_t value,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		assignSemantics(node, labels(tag), value);
+		// auto ls = labels(tag);
+		// derived().apply(
+		//     node,
+		//     [this, ls, value](auto& node, index_t index) {
+		// 	    semanticNode(node).assign(index, ls, value);
+		//     },
+		//     [this, ls, value](auto& node) { semanticNode(node).assign(ls, value); },
+		//     propagate);
+
 	}
 
-	void assignSemantics(Code code, std::string const& name, value_t value,
+	void assignSemantics(Code code, std::string const& tag, value_t value,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		assignSemantics(code, labels(tag), value);
+		// auto ls = labels(tag);
+		// derived().apply(
+		//     code,
+		//     [this, ls, value](auto& node, index_t index) {
+		// 	    semanticNode(node).assign(index, ls, value);
+		//     },
+		//     [this, ls, value](auto& node) { semanticNode(node).assign(ls, value); },
+		//     propagate);
 	}
 
-	void assignSemantics(Key key, std::string const& name, value_t value,
+	void assignSemantics(Key key, std::string const& tag, value_t value,
 	                     bool propagate = true)
 	{
-		assignSemantics(derived().toCode(key), name, value, propagate);
+		assignSemantics(derived().toCode(key), tag, value, propagate);
 	}
 
-	void assignSemantics(Point coord, std::string const& name, value_t value,
+	void assignSemantics(Point coord, std::string const& tag, value_t value,
 	                     bool propagate = true, depth_t depth = 0)
 	{
-		assignSemantics(derived().toCode(coord, depth), name, value, propagate);
+		assignSemantics(derived().toCode(coord, depth), tag, value, propagate);
 	}
 
-	void assignSemantics(coord_t x, coord_t y, coord_t z, std::string const& name,
+	void assignSemantics(coord_t x, coord_t y, coord_t z, std::string const& tag,
 	                     value_t value, bool propagate = true, depth_t depth = 0)
 	{
-		assignSemantics(derived().toCode(x, y, z, depth), name, value, propagate);
+		assignSemantics(derived().toCode(x, y, z, depth), tag, value, propagate);
 	}
 
-	template <class UnaryFunction>
-	void assignSemantics(Node node, std::string const& name, UnaryFunction f,
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	void assignSemantics(Node node, std::string const& tag, UnaryFunction f,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		assignSemantics(node, labels(tag), f);
+		// auto ls = labels(tag);
+		// derived().apply(
+		//     node,
+		//     [this, ls, f](auto& node, index_t index) {
+		// 	    semanticNode(node).assign(index, ls, f);
+		//     },
+		//     [this, ls, f](auto& node) { semanticNode(node).assign(ls, f); },
+		//     propagate);
 	}
 
-	template <class UnaryFunction>
-	void assignSemantics(Code code, std::string const& name, UnaryFunction f,
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	void assignSemantics(Code code, std::string const& tag, UnaryFunction f,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		assignSemantics(code, labels(tag), f);
+		// auto ls = labels(tag);
+		// derived().apply(
+		//     code,
+		//     [this, ls, f](auto& node, index_t index) {
+		// 	    semanticNode(node).assign(index, ls, f);
+		//     },
+		//     [this, ls, f](auto& node) { semanticNode(node).assign(ls, f); },
+		//     propagate);
 	}
 
-	template <class UnaryFunction>
-	void assignSemantics(Key key, std::string const& name, UnaryFunction f,
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	void assignSemantics(Key key, std::string const& tag, UnaryFunction f,
 	                     bool propagate = true)
 	{
-		assignSemantics(derived().toCode(key), name, f, propagate);
+		assignSemantics(derived().toCode(key), tag, f, propagate);
 	}
 
-	template <class UnaryFunction>
-	void assignSemantics(Point coord, std::string const& name, UnaryFunction f,
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	void assignSemantics(Point coord, std::string const& tag, UnaryFunction f,
 	                     bool propagate = true, depth_t depth = 0)
 	{
-		assignSemantics(derived().toCode(coord, depth), name, f, propagate);
+		assignSemantics(derived().toCode(coord, depth), tag, f, propagate);
 	}
 
-	template <class UnaryFunction>
-	void assignSemantics(coord_t x, coord_t y, coord_t z, std::string const& name,
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	void assignSemantics(coord_t x, coord_t y, coord_t z, std::string const& tag,
 	                     UnaryFunction f, bool propagate = true, depth_t depth = 0)
 	{
-		assignSemantics(derived().toCode(x, y, z, depth), name, f, propagate);
+		assignSemantics(derived().toCode(x, y, z, depth), tag, f, propagate);
 	}
 
 	void assignSemantics(Node node, SemanticRange range, value_t value,
@@ -628,13 +777,25 @@ class SemanticMapBase : public SemanticMapping
 	void assignSemantics(Node node, SemanticRangeSet const& ranges, value_t value,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, ranges, value](auto& node, index_t index) {
+			    semanticNode(node).assign(index, ranges, value);
+		    },
+		    [this, ranges, value](auto& node) { semanticNode(node).assign(ranges, value); },
+		    propagate);
 	}
 
 	void assignSemantics(Code code, SemanticRangeSet const& ranges, value_t value,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, ranges, value](auto& node, index_t index) {
+			    semanticNode(node).assign(index, ranges, value);
+		    },
+		    [this, ranges, value](auto& node) { semanticNode(node).assign(ranges, value); },
+		    propagate);
 	}
 
 	void assignSemantics(Key key, SemanticRangeSet const& ranges, value_t value,
@@ -655,70 +816,92 @@ class SemanticMapBase : public SemanticMapping
 		assignSemantics(derived().toCode(x, y, z, depth), ranges, value, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Node node, SemanticRange range, UnaryFunction f,
 	                     bool propagate = true)
 	{
 		assignSemantics(node, SemanticRangeSet(range), f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Code code, SemanticRange range, UnaryFunction f,
 	                     bool propagate = true)
 	{
 		assignSemantics(code, SemanticRangeSet(range), f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Key key, SemanticRange range, UnaryFunction f,
 	                     bool propagate = true)
 	{
 		assignSemantics(derived().toCode(key), range, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Point coord, SemanticRange range, UnaryFunction f,
 	                     bool propagate = true, depth_t depth = 0)
 	{
 		assignSemantics(derived().toCode(coord, depth), range, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(coord_t x, coord_t y, coord_t z, SemanticRange range,
 	                     UnaryFunction f, bool propagate = true, depth_t depth = 0)
 	{
 		assignSemantics(derived().toCode(x, y, z, depth), range, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Node node, SemanticRangeSet const& ranges, UnaryFunction f,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, ranges, f](auto& node, index_t index) {
+			    semanticNode(node).assign(index, ranges, f);
+		    },
+		    [this, ranges, f](auto& node) { semanticNode(node).assign(ranges, f); },
+		    propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Code code, SemanticRangeSet const& ranges, UnaryFunction f,
 	                     bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, ranges, f](auto& node, index_t index) {
+			    semanticNode(node).assign(index, ranges, f);
+		    },
+		    [this, ranges, f](auto& node) { semanticNode(node).assign(ranges, f); },
+		    propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Key key, SemanticRangeSet const& ranges, UnaryFunction f,
 	                     bool propagate = true)
 	{
 		assignSemantics(derived().toCode(key), ranges, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(Point coord, SemanticRangeSet const& ranges, UnaryFunction f,
 	                     bool propagate = true, depth_t depth = 0)
 	{
 		assignSemantics(derived().toCode(coord, depth), ranges, f, propagate);
 	}
 
-	template <class UnaryFunction>
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
 	void assignSemantics(coord_t x, coord_t y, coord_t z, SemanticRangeSet const& ranges,
 	                     UnaryFunction f, bool propagate = true, depth_t depth = 0)
 	{
@@ -736,12 +919,24 @@ class SemanticMapBase : public SemanticMapping
 
 	void eraseSemantics(Node node, label_t label, bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, label](auto& node, index_t index) {
+			    semanticNode(node).erase(index, label);
+		    },
+		    [this, label](auto& node) { semanticNode(node).erase(label); },
+		    propagate);
 	}
 
 	void eraseSemantics(Code code, label_t label, bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, label](auto& node, index_t index) {
+			    semanticNode(node).erase(index, label);
+		    },
+		    [this, label](auto& node) { semanticNode(node).erase(label); },
+		    propagate);
 	}
 
 	void eraseSemantics(Key key, label_t label, bool propagate = true)
@@ -761,38 +956,77 @@ class SemanticMapBase : public SemanticMapping
 		eraseSemantics(derived().toCode(x, y, z, depth), label, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void eraseSemantics(InputIt first, InputIt last, bool propagate = true)
 	{
 		eraseSemantics(derived().rootCode(), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void eraseSemantics(Node node, InputIt first, InputIt last, bool propagate = true)
 	{
-		// TODO: Implement
+		eraseSemantics(node, SemanticRangeSet(first, last));
+		// SemanticRangeSet rs(first, last);
+		// derived().apply(
+		//     node,
+		//     [this, rs](auto& node, index_t index) {
+		// 	    semanticNode(node).erase(index, rs);
+		//     },
+		//     [this, rs](auto& node) { semanticNode(node).erase(rs); },
+		//     propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void eraseSemantics(Code code, InputIt first, InputIt last, bool propagate = true)
 	{
-		// TODO: Implement
+		eraseSemantics(code, SemanticRangeSet(first, last));
+		// SemanticRangeSet rs(first, last);
+		// derived().apply(
+		//     code,
+		//     [this, rs](auto& node, index_t index) {
+		// 	    semanticNode(node).erase(index, rs);
+		//     },
+		//     [this, rs](auto& node) { semanticNode(node).erase(rs); },
+		//     propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void eraseSemantics(Key key, InputIt first, InputIt last, bool propagate = true)
 	{
 		eraseSemantics(derived().toCode(key), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void eraseSemantics(Point coord, InputIt first, InputIt last, bool propagate = true,
 	                    depth_t depth = 0)
 	{
 		eraseSemantics(derived().toCode(coord, depth), first, last, propagate);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void eraseSemantics(coord_t x, coord_t y, coord_t z, InputIt first, InputIt last,
 	                    bool propagate = true, depth_t depth = 0)
 	{
@@ -874,12 +1108,24 @@ class SemanticMapBase : public SemanticMapping
 
 	void eraseSemantics(Node node, SemanticRangeSet const& ranges, bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, ranges](auto& node, index_t index) {
+			    semanticNode(node).erase(index, ranges);
+		    },
+		    [this, ranges](auto& node) { semanticNode(node).erase(ranges); },
+		    propagate);
 	}
 
 	void eraseSemantics(Code code, SemanticRangeSet const& ranges, bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, ranges](auto& node, index_t index) {
+			    semanticNode(node).erase(index, ranges);
+		    },
+		    [this, ranges](auto& node) { semanticNode(node).erase(ranges); },
+		    propagate);
 	}
 
 	void eraseSemantics(Key key, SemanticRangeSet const& ranges, bool propagate = true)
@@ -899,198 +1145,246 @@ class SemanticMapBase : public SemanticMapping
 		eraseSemantics(derived().toCode(x, y, z, depth), ranges, propagate);
 	}
 
-	void eraseSemantics(std::string const& name, bool propagate = true)
+	void eraseSemantics(std::string const& tag, bool propagate = true)
 	{
-		eraseSemantics(derived().rootCode(), name, propagate);
+		eraseSemantics(derived().rootCode(), tag, propagate);
 	}
 
-	void eraseSemantics(Node node, std::string const& name, bool propagate = true)
+	void eraseSemantics(Node node, std::string const& tag, bool propagate = true)
 	{
-		// TODO: Implement
+		eraseSemantics(node, labels(tag));
 	}
 
-	void eraseSemantics(Code code, std::string const& name, bool propagate = true)
+	void eraseSemantics(Code code, std::string const& tag, bool propagate = true)
 	{
-		// TODO: Implement
+		eraseSemantics(code, labels(tag));
 	}
 
-	void eraseSemantics(Key key, std::string const& name, bool propagate = true)
+	void eraseSemantics(Key key, std::string const& tag, bool propagate = true)
 	{
-		eraseSemantics(derived().toCode(key), name, propagate);
+		eraseSemantics(derived().toCode(key), tag, propagate);
 	}
 
-	void eraseSemantics(Point coord, std::string const& name, bool propagate = true,
+	void eraseSemantics(Point coord, std::string const& tag, bool propagate = true,
 	                    depth_t depth = 0)
 	{
-		eraseSemantics(derived().toCode(coord, depth), name, propagate);
+		eraseSemantics(derived().toCode(coord, depth), tag, propagate);
 	}
 
-	void eraseSemantics(coord_t x, coord_t y, coord_t z, std::string const& name,
+	void eraseSemantics(coord_t x, coord_t y, coord_t z, std::string const& tag,
 	                    bool propagate = true, depth_t depth = 0)
 	{
-		eraseSemantics(derived().toCode(x, y, z, depth), name, propagate);
+		eraseSemantics(derived().toCode(x, y, z, depth), tag, propagate);
 	}
 
 	//
 	// Erase if
 	//
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(UnaryPredicate p, bool propagate = true)
 	{
 		eraseIfSemantics(derived().rootCode(), p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Node node, UnaryPredicate p, bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, p](auto& node, index_t index) {
+			    semanticNode(node).eraseIf(index, p);
+		    },
+		    [this, p](auto& node) { semanticNode(node).eraseIf(p); },
+		    propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Code code, UnaryPredicate p, bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, p](auto& node, index_t index) {
+			    semanticNode(node).eraseIf(index, p);
+		    },
+		    [this, p](auto& node) { semanticNode(node).eraseIf(p); },
+		    propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Key key, UnaryPredicate p, bool propagate = true)
 	{
 		eraseIfSemantics(derived().toCode(key), p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Point coord, UnaryPredicate p, bool propagate = true,
 	                      depth_t depth = 0)
 	{
 		eraseIfSemantics(derived().toCode(coord, depth), p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(coord_t x, coord_t y, coord_t z, UnaryPredicate p,
 	                      bool propagate = true, depth_t depth = 0)
 	{
 		eraseIfSemantics(derived().toCode(x, y, z, depth), p, propagate);
 	}
 
-	template <class UnaryPredicate>
-	void eraseIfSemantics(std::string const& name, UnaryPredicate p, bool propagate = true)
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
+	void eraseIfSemantics(std::string const& tag, UnaryPredicate p, bool propagate = true)
 	{
-		eraseIfSemantics(derived().rootCode(), name, p, propagate);
+		eraseIfSemantics(derived().rootCode(), tag, p, propagate);
 	}
 
-	template <class UnaryPredicate>
-	void eraseIfSemantics(Node node, std::string const& name, UnaryPredicate p,
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
+	void eraseIfSemantics(Node node, std::string const& tag, UnaryPredicate p,
 	                      bool propagate = true)
 	{
-		// TODO: Implement
+		eraseIfSemantics(node, labels(tag), p);
 	}
 
-	template <class UnaryPredicate>
-	void eraseIfSemantics(Code code, std::string const& name, UnaryPredicate p,
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
+	void eraseIfSemantics(Code code, std::string const& tag, UnaryPredicate p,
 	                      bool propagate = true)
 	{
-		// TODO: Implement
+		eraseIfSemantics(code, labels(tag), p);
 	}
 
-	template <class UnaryPredicate>
-	void eraseIfSemantics(Key key, std::string const& name, UnaryPredicate p,
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
+	void eraseIfSemantics(Key key, std::string const& tag, UnaryPredicate p,
 	                      bool propagate = true)
 	{
-		eraseIfSemantics(derived().toCode(key), name, p, propagate);
+		eraseIfSemantics(derived().toCode(key), tag, p, propagate);
 	}
 
-	template <class UnaryPredicate>
-	void eraseIfSemantics(Point coord, std::string const& name, UnaryPredicate p,
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
+	void eraseIfSemantics(Point coord, std::string const& tag, UnaryPredicate p,
 	                      bool propagate = true, depth_t depth = 0)
 	{
-		eraseIfSemantics(derived().toCode(coord, depth), name, p, propagate);
+		eraseIfSemantics(derived().toCode(coord, depth), tag, p, propagate);
 	}
 
-	template <class UnaryPredicate>
-	void eraseIfSemantics(coord_t x, coord_t y, coord_t z, std::string const& name,
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
+	void eraseIfSemantics(coord_t x, coord_t y, coord_t z, std::string const& tag,
 	                      UnaryPredicate p, bool propagate = true, depth_t depth = 0)
 	{
-		eraseIfSemantics(derived().toCode(x, y, z, depth), name, p, propagate);
+		eraseIfSemantics(derived().toCode(x, y, z, depth), tag, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(SemanticRange range, UnaryPredicate p, bool propagate = true)
 	{
 		eraseIfSemantics(derived().rootCode(), range, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Node node, SemanticRange range, UnaryPredicate p,
 	                      bool propagate = true)
 	{
 		eraseIfSemantics(node, SemanticRangeSet(range), p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Code code, SemanticRange range, UnaryPredicate p,
 	                      bool propagate = true)
 	{
 		eraseIfSemantics(code, SemanticRangeSet(range), p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Key key, SemanticRange range, UnaryPredicate p,
 	                      bool propagate = true)
 	{
 		eraseIfSemantics(derived().toCode(key), range, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Point coord, SemanticRange range, UnaryPredicate p,
 	                      bool propagate = true, depth_t depth = 0)
 	{
 		eraseIfSemantics(derived().toCode(coord, depth), range, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(coord_t x, coord_t y, coord_t z, SemanticRange range,
 	                      UnaryPredicate p, bool propagate = true, depth_t depth = 0)
 	{
 		eraseIfSemantics(derived().toCode(x, y, z, depth), range, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(SemanticRangeSet const& ranges, UnaryPredicate p,
 	                      bool propagate = true)
 	{
 		eraseIfSemantics(derived().rootCode(), ranges, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Node node, SemanticRangeSet const& ranges, UnaryPredicate p,
 	                      bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    node,
+		    [this, ranges, p](auto& node, index_t index) {
+			    semanticNode(node).eraseIf(index, ranges, p);
+		    },
+		    [this, ranges, p](auto& node) { semanticNode(node).eraseIf(ranges, p); },
+		    propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Code code, SemanticRangeSet const& ranges, UnaryPredicate p,
 	                      bool propagate = true)
 	{
-		// TODO: Implement
+		derived().apply(
+		    code,
+		    [this, ranges, p](auto& node, index_t index) {
+			    semanticNode(node).eraseIf(index, ranges, p);
+		    },
+		    [this, ranges, p](auto& node) { semanticNode(node).eraseIf(ranges, p); },
+		    propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Key key, SemanticRangeSet const& ranges, UnaryPredicate p,
 	                      bool propagate = true)
 	{
 		eraseIfSemantics(derived().toCode(key), ranges, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(Point coord, SemanticRangeSet const& ranges, UnaryPredicate p,
 	                      bool propagate = true, depth_t depth = 0)
 	{
 		eraseIfSemantics(derived().toCode(coord, depth), ranges, p, propagate);
 	}
 
-	template <class UnaryPredicate>
+	template <class UnaryPredicate,
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>>
 	void eraseIfSemantics(coord_t x, coord_t y, coord_t z, SemanticRangeSet const& ranges,
 	                      UnaryPredicate p, bool propagate = true, depth_t depth = 0)
 	{
@@ -1100,6 +1394,11 @@ class SemanticMapBase : public SemanticMapping
 	//
 	// Clear
 	//
+
+	template <std::size_t N>
+	void clear(SemanticNode<N>&)
+	{
+	}
 
 	void clearSemantics(bool propagate = true)
 	{
@@ -1191,99 +1490,21 @@ class SemanticMapBase : public SemanticMapping
 		changeSemantics(derived().toCode(x, y, z, depth), old_label, new_label, propagate);
 	}
 
-	// //
-	// // Get label mapping
-	// //
+	//
+	// Fill
+	//
 
-	// [[nodiscard]] SemanticRange getLabelMapping(std::string const& name) const
-	// {
-	// 	// TODO: Look at
-	// 	std::set<std::string> names;
-	// 	std::queue<std::string> queue;
-	// 	queue.push(name);
-	// 	while (!queue.empty()) {
-	// 		std::string cur = queue.front();
-	// 		queue.pop();
-	// 		for (auto const& str : label_mapping_.at(cur).strings) {
-	// 			if (names.insert(str).second) {
-	// 				queue.push(str);
-	// 			}
-	// 		}
-	// 	}
-	// 	container::RangeSet<label_t> labels;
-	// 	for (auto const& str : names) {
-	// 		labels.insert(std::cbegin(label_mapping_.ranges), std::cend(label_mapping_.ranges));
-	// 	}
-	// 	return labels;
-	// }
+	template <std::size_t N>
+	void fill(SemanticNode<N>& node, SemanticNode<N> const& parent, index_t index)
+	{
+		node.fill(parent, index);
+	}
 
-	// //
-	// // Add label mapping
-	// //
-
-	// void addLabelMapping(std::string const& name, label_t label)
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// void addLabelMapping(std::string const& name, SemanticRange label_range)
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// void addLabelMapping(std::string const& name, std::string const& name_2)
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// template <class InputIt>
-	// void addLabelMapping(std::string const& name, InputIt first, InputIt last)
-	// {
-	// 	while (first != last) {
-	// 		addLabelMapping(name, *first);
-	// 		std::advance(first, 1);
-	// 	}
-	// }
-
-	// //
-	// // Remove label mapping
-	// //
-
-	// void removeLabelMapping(std::string const& name)
-	// {
-	// 	// TODO: Implement
-	// }
-
-	// // void removeLabelMapping(std::string const& name)
-	// // {
-	// // 	auto it = label_mapping_.find(name);
-	// // 	if (string_label_mapping_.end() != it) {
-	// // 		for (auto const& l : it->second) {
-	// // 			label_string_mapping_.erase(l);
-	// // 		}
-	// // 		string_label_mapping_.erase(it);
-	// // 	}
-	// // }
-
-	// // void removeLabelMapping(label_t  label)
-	// // {
-	// // 	auto it = label_string_mapping_.find(label);
-	// // 	if (label_string_mapping_.end() != it) {
-	// // 		string_label_mapping_[it->second].erase(label);
-	// // 		label_string_mapping_.erase(it);
-	// // 	}
-	// // }
-
-	// //
-	// // Clear label mapping
-	// //
-
-	// void clearLabelMapping() { label_mapping_.clear(); }
-
-	// void clearLabelMapping(std::string const& name)
-	// {
-	// 	// TODO: Implement
-	// }
+	template <std::size_t N>
+	[[nodiscard]] bool isCollapsible(SemanticNode<N> const& node) const
+	{
+		return node.isCollapsible();
+	}
 
  protected:
 	//
@@ -1364,15 +1585,26 @@ class SemanticMapBase : public SemanticMapping
 	//
 
 	template <std::size_t N, class T>
-	void updateNode(SemanticNode<N>& node, IndexField const indices, T const& children)
+	void updateNode(SemanticNode<N>& node, index_t index, T const& children)
 	{
 		if constexpr (1 == N) {
-			// TODO: Implement
-		} else if (indices.all()) {
-			// TODO: Implement
+			node.set(0, SemanticSet(children.cbegin(), children.cend()));
 		} else {
-			// TODO: Implement
-		}
+			node.set(index, SemanticSet(children.cbegin(0), children.cend(0)));
+			// TODO use propagation criteria, for now using max of values if labels are the same
+			// TODO make more efficient
+			for (int i = 1; i < N; ++i) {
+				for(auto iter = children.begin(i); iter != children.end(i); ++iter) {
+					auto semantic = node.find(index, iter->label); 
+					// auto end = node.end(index);
+					if (semantic != node.end(index)) {
+						node.insertOrAssign(index, iter->label, std::max(iter->value, semantic->value));
+					} else {
+						node.insert(index, iter->label, iter->value);
+					}
+				}
+			}
+		} 
 	}
 
 	//
@@ -1386,7 +1618,11 @@ class SemanticMapBase : public SemanticMapping
 		return mapType() == mt;
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	[[nodiscard]] static constexpr uint8_t numData() noexcept
 	{
 		using value_type = typename std::iterator_traits<InputIt>::value_type;
@@ -1451,17 +1687,9 @@ class SemanticMapBase : public SemanticMapping
 	// }
 
  protected:
-	// Label mapping
-	SemanticMapping mapping_;
-
 	// Propagation
 	SemanticPropagation propagation_;
 };
 }  // namespace ufo::map
 
 #endif  // UFO_MAP_SEMANTIC_MAP_H
-
-// map.anySemantics(node, "car");
-// map.allSemantics(node, "car");
-// map.noneSemantics(node, "car");
-// map.anySemantics(node, [](Semantic sem) { return 100 < sem.value; });

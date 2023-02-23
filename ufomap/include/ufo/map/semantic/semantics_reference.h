@@ -80,6 +80,18 @@ class SemanticsReference
 
 	constexpr SemanticsReference(SemanticsReference&&) = default;
 
+	SemanticsReference(SemanticMapping const* mapping, SemanticNode<8> const* semantics,
+	                   index_t const index)
+	    : mapping_(mapping), semantics_(semantics), index_(index)
+	{
+	}
+
+	SemanticsReference(SemanticMapping const& mapping, SemanticNode<8> const& semantics,
+	                   index_t const index)
+	    : mapping_(&mapping), semantics_(&semantics), index_(index)
+	{
+	}
+
 	//
 	// Assignment operator
 	//
@@ -311,21 +323,8 @@ class SemanticsReference
 		return semantics_->none(index_, ranges, p);
 	}
 
- private:
-	//
-	// Constructor
-	//
-
-	SemanticsReference(SemanticMapping const* mapping, SemanticNode<8> const* semantics,
-	                   index_t const index)
-	    : mapping_(mapping), semantics_(semantics), index_(index)
-	{
-	}
-
-	SemanticsReference(SemanticMapping const& mapping, SemanticNode<8> const& semantics,
-	                   index_t const index)
-	    : mapping_(&mapping), semantics_(&semantics), index_(index)
-	{
+	std::string toString() const {
+		return semantics_->toString();
 	}
 
  private:

@@ -307,15 +307,15 @@ struct SemanticNode {
 	// TODO: Change label
 	//
 
-	void changeLabel(label_t old_label, label_t new_label)
-	{
-		// TODO: Implement
-	}
+	// void changeLabel(label_t old_label, label_t new_label)
+	// {
+	// 	// TODO: Implement
+	// }
 
-	void changeLabel(index_t index, label_t old_label, label_t new_label)
-	{
-		// TODO: Implement
-	}
+	// void changeLabel(index_t index, label_t old_label, label_t new_label)
+	// {
+	// 	// TODO: Implement
+	// }
 
 	//
 	// Insert
@@ -331,13 +331,21 @@ struct SemanticNode {
 		semantic::insert<N>(semantics, index, label, value);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insert(InputIt first, InputIt last)
 	{
 		semantic::insert<N>(semantics, first, last);
 	}
 
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insert(index_t index, InputIt first, InputIt last)
 	{
 		semantic::insert<N>(semantics, index, first, last);
@@ -370,31 +378,47 @@ struct SemanticNode {
 	}
 
 	// iterator to semantics
-	// TODO: enable if for InputIt
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssign(InputIt first, InputIt last)
 	{
 		semantic::insertOrAssign<N>(semantics, first, last);
 	}
 
 	// iterator to semantics
-	// TODO: enable if for InputIt
-	template <class InputIt>
+	template <class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssign(index_t index, InputIt first, InputIt last)
 	{
 		semantic::insertOrAssign<N>(semantics, index, first, last);
 	}
 
 	// TODO: enable if InputIt is iterator, otherwise this function is called instead of insertOrAssign(index, label, f)
-	// // iterator to label
-	// template <class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
-	// void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
-	// {
-	// 	semantic::insertOrAssign<N>(semantics, first, last, f);
-	// }
+	// iterator to label
+	template <class InputIt, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
+	void insertOrAssign(InputIt first, InputIt last, UnaryFunction f)
+	{
+		semantic::insertOrAssign<N>(semantics, first, last, f);
+	}
 
 	// iterator to label
-	template <class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	template <class InputIt, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
+				  >
 	void insertOrAssign(index_t index, InputIt first, InputIt last, UnaryFunction f)
 	{
 		semantic::insertOrAssign<N>(semantics, index, first, last, f);
@@ -420,7 +444,15 @@ struct SemanticNode {
 	>
 	void assign(SemanticRange range, UnaryFunction f)
 	{
-		semantic::assign<N>(semantics, SemanticRangeSet{range}, f);
+		assign(SemanticRangeSet{range}, f);
+	}
+
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>
+	>
+	void assign(SemanticRangeSet const& ranges, UnaryFunction f)
+	{
+		semantic::assign<N>(semantics, ranges, f);
 	}
 
 	template <class UnaryPredicate, class UnaryFunction,
@@ -442,13 +474,21 @@ struct SemanticNode {
 	{
 		semantic::assign<N>(semantics, index, ranges, value);
 	}
+
+	template <class UnaryFunction,
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>
+	>
+	void assign(index_t const index, SemanticRangeSet const& ranges, UnaryFunction f)
+	{
+		semantic::assign<N>(semantics, index, ranges, f);
+	}
 	
 	template <class UnaryFunction,
 	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>
 	>
 	void assign(index_t const index, SemanticRange range, UnaryFunction f)
 	{
-		semantic::assign<N>(semantics, index, SemanticRangeSet{range}, f);
+		assign(index, SemanticRangeSet{range}, f);
 	}
 
 	template <class UnaryPredicate, class UnaryFunction,
