@@ -170,7 +170,10 @@ namespace ufo::map::semantic {
 	// Lower bound
 	//
 
-	template<class InputIt>
+	template<class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	[[nodiscard]] InputIt lower_bound(InputIt first, InputIt last, label_t label) 
 	{
 		return std::lower_bound(first, last, Semantic(label, std::numeric_limits<value_t>::lowest()));
@@ -187,7 +190,10 @@ namespace ufo::map::semantic {
 	// Upper bound
 	//
 
-	template<class InputIt>
+	template<class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	[[nodiscard]] InputIt upper_bound(InputIt first, InputIt last, label_t label) 
 	{
 		return std::upper_bound(first, last, Semantic(label, std::numeric_limits<value_t>::max()));
@@ -655,7 +661,10 @@ namespace ufo::map::semantic {
 
 
 
-	template <std::size_t N, class InputIt>
+	template <std::size_t N, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	size_type numAlreadyExists(std::unique_ptr<Semantic[]> const& semantics, index_t const index, InputIt first, InputIt last)
 	{
 		size_type num = 0;
@@ -695,7 +704,10 @@ namespace ufo::map::semantic {
 	 * @param first Iterator to Semantic
 	 * @param last Iterator to Semantic
 	 */
-	template <std::size_t N, bool Assign, class InputIt>
+	template <std::size_t N, bool Assign, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, size_type cur_size, size_type new_size, InputIt first, InputIt last)
 	{
 		if (0 == new_size) {
@@ -753,7 +765,11 @@ namespace ufo::map::semantic {
 	 * @param last Iterator to label_t
 	 * @param f
 	 */
-	template <std::size_t N, bool Assign, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	template <std::size_t N, bool Assign, class InputIt, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, index_t index, size_type cur_size, size_type new_size,
 	                    InputIt first, InputIt last, UnaryFunction f)
 	{
@@ -896,7 +912,10 @@ namespace ufo::map::semantic {
 
 
 	// allocate the space and insert/assign to index, iterators
-	template <std::size_t N, bool Assign, class InputIt>
+	template <std::size_t N, bool Assign, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, index_t const index, InputIt first, InputIt last)
 	{
 		std::vector vec(first, last);
@@ -928,7 +947,10 @@ namespace ufo::map::semantic {
 
 	// allocate the space and insert/assign to all nodes, iterators
 	// allocate all space for all nodes at the same time, then insert
-	template <std::size_t N, bool Assign, class InputIt>
+	template <std::size_t N, bool Assign, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last)
 	{
 		std::vector vec(first, last);
@@ -1008,7 +1030,11 @@ namespace ufo::map::semantic {
 	}
 
 	// InputIt to label_t
-	template <std::size_t N, bool Assign, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	template <std::size_t N, bool Assign, class InputIt, 
+	class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, index_t const index, InputIt first, InputIt last, UnaryFunction fun)
 	{
 		std::vector vec(first, last);
@@ -1042,50 +1068,56 @@ namespace ufo::map::semantic {
 	}
 
 	// TODO: enable if InputIt is iterator, otherwise this function is called instead of insertOrAssign(index, label, f)
-	// template <std::size_t N, bool Assign, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
-	// void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last, UnaryFunction fun)
-	// {
-	// 	std::vector vec(first, last);
+	template <std::size_t N, bool Assign, class InputIt, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
+	void insertOrAssignImpl(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last, UnaryFunction fun)
+	{
+		std::vector vec(first, last);
 
-	// 	std::sort(std::begin(vec), std::end(vec));
+		std::sort(std::begin(vec), std::end(vec));
 
-	// 	// Erase duplicate labels
-	// 	auto r_last = std::unique(std::rbegin(vec), std::rend(vec),
-	// 	                          [](auto a, auto b) { return a == b; });
+		// Erase duplicate labels
+		auto r_last = std::unique(std::rbegin(vec), std::rend(vec),
+		                          [](auto a, auto b) { return a == b; });
 
-	// 	auto f = r_last.base();
-	// 	auto l = std::end(vec);
-	// 	auto s = std::distance(f, l);
+		auto f = r_last.base();
+		auto l = std::end(vec);
+		auto s = std::distance(f, l);
 
-	// 	std::array<size_type, N> new_sizes;
-	// 	new_sizes.fill(s);
+		std::array<size_type, N> new_sizes;
+		new_sizes.fill(s);
 
-	// 	if (empty<N>(semantics)) {
-	// 		// Optimized insert
-	// 		std::vector<Semantic> sem;
-	// 		sem.reserve(s);
-	// 		for (; f != l; ++first) {
-	// 			sem.emplace_back(*f, fun(Semantic(*f)));
-	// 		}
-	// 		resize<N>(semantics, new_sizes);
-	// 		for (index_t index = 0; N != index; ++index) {
-	// 			std::copy(std::cbegin(sem), std::cend(sem), begin<N>(semantics, index));
-	// 		}
-	// 	} else {
-	// 		// Calculate how many elements already exists per index
-	// 		for (index_t index = 0; N != index; ++index) {
-	// 			new_sizes[index] -= numAlreadyExists<N>(semantics, index, f, l);
-	// 		}
+		if (empty<N>(semantics)) {
+			// Optimized insert
+			std::vector<Semantic> sem;
+			sem.reserve(s);
+			for (; f != l; ++first) {
+				sem.emplace_back(*f, fun(Semantic(*f)));
+			}
+			resize<N>(semantics, new_sizes);
+			for (index_t index = 0; N != index; ++index) {
+				std::copy(std::cbegin(sem), std::cend(sem), begin<N>(semantics, index));
+			}
+		} else {
+			// Calculate how many elements already exists per index
+			std::array<size_type, N> cur_sizes = sizes<N>(semantics);
 
-	// 		std::array<size_type, N> cur_sizes = sizes<N>(semantics);
-	// 		resize<N>(semantics, new_sizes);
+			for (index_t index = 0; N != index; ++index) {
+				new_sizes[index] = cur_sizes[index] + s - numAlreadyExists<N>(semantics, index, f, l);
+				// new_sizes[index] -= numAlreadyExists<N>(semantics, index, f, l);
+			}
 
-	// 		// Do insert where memory already has been allocated
-	// 		for (index_t index = 0; N != index; ++index) {
-	// 			insertOrAssignImpl<N, Assign>(semantics, index, cur_sizes[index], new_sizes[index], f, l, fun);
-	// 		}
-	// 	}
-	// }
+			resize<N>(semantics, new_sizes);
+
+			// Do insert where memory already has been allocated
+			for (index_t index = 0; N != index; ++index) {
+				insertOrAssignImpl<N, Assign>(semantics, index, cur_sizes[index], new_sizes[index], f, l, fun);
+			}
+		}
+	}
 
 	//
 	// Insert
@@ -1102,7 +1134,10 @@ namespace ufo::map::semantic {
 	// void insert(std::unique_ptr<Semantic[]> & semantics, Semantic semantic) { return insert<N>(semantic.label, semantic.value); }
 
 
-	template <std::size_t N, class InputIt>
+	template <std::size_t N, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insert(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last)
 	{
 		insertOrAssignImpl<N, false>(semantics, first, last);
@@ -1116,7 +1151,10 @@ namespace ufo::map::semantic {
 		return insertOrAssignImpl<N, false>(semantics, index, label, [value](auto) { return value; });
 	}
 
-	template <std::size_t N, class InputIt>
+	template <std::size_t N, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insert(std::unique_ptr<Semantic[]> & semantics, index_t const index, InputIt first, InputIt last)
 	{
 		insertOrAssignImpl<N, false>(semantics, index, first, last);
@@ -1140,7 +1178,10 @@ namespace ufo::map::semantic {
 		insertOrAssignImpl<N, true>(semantics, label, [value](auto) { return value; });
 	}
 	
-	template <std::size_t N, class InputIt>
+	template <std::size_t N, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last)
 	{
 		insertOrAssignImpl<N, true>(semantics, first, last);
@@ -1154,12 +1195,15 @@ namespace ufo::map::semantic {
 	}
 
 	// InputIt to label
-	// TODO: enable if InputIt is iterator
-	// template <std::size_t N, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
-	// void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last, UnaryFunction f)
-	// {
-	// 	insertOrAssignImpl<N, true>(semantics, first, last, f);
-	// }
+	template <std::size_t N, class InputIt, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
+	void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, InputIt first, InputIt last, UnaryFunction f)
+	{
+		insertOrAssignImpl<N, true>(semantics, first, last, f);
+	}
 
 	// index
 	template<std::size_t N>
@@ -1168,7 +1212,10 @@ namespace ufo::map::semantic {
 		return insertOrAssignImpl<N, true>(semantics, index, label, [value](auto) { return value; });
 	}
 	
-	template <std::size_t N, class InputIt>
+	template <std::size_t N, class InputIt,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, index_t index, InputIt first, InputIt last)
 	{
 		insertOrAssignImpl<N, true>(semantics, index, first, last);
@@ -1186,8 +1233,11 @@ namespace ufo::map::semantic {
 		return insertOrAssignImpl<N, true>(semantics, index, label, f);
 	}
 
-	// TODO: enable if InputIt is iterator
-	template <std::size_t N, class InputIt, class UnaryFunction, class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>>
+	template <std::size_t N, class InputIt, class UnaryFunction, 
+	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>>
 	void insertOrAssign(std::unique_ptr<Semantic[]> & semantics, index_t index, InputIt first, InputIt last, UnaryFunction f)
 	{
 		insertOrAssignImpl<N, true>(semantics, index, first, last, f);
@@ -1223,10 +1273,12 @@ namespace ufo::map::semantic {
 		assign<N>(semantics, index, ranges, [value](auto) { return value; });
 	}
 
-	// TODO: enable if InputIt is iterator
 	template <std::size_t N, class InputIt, class UnaryPredicate, class UnaryFunction, 
 	class = std::enable_if_t<std::is_invocable<UnaryFunction, Semantic>::value>,
-	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>
+	class = std::enable_if_t<std::is_invocable<UnaryPredicate, Semantic>::value>,
+	typename = std::enable_if_t<std::is_base_of_v<
+	              std::input_iterator_tag,
+	              typename std::iterator_traits<InputIt>::iterator_category>>
 	>
 	void assign(InputIt first, InputIt last, UnaryPredicate p, UnaryFunction f)
 	{
